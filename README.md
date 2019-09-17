@@ -7,16 +7,16 @@ Just include .js file in your HTML and initialize table with:
 
 where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags like:
 
-<table id="table1">
-  <thead>
-    <tr><th>header</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>value1</td></tr>
-  </tbody>
-</table>
+    <table id="table1">
+        <thead>
+            <tr><th>header</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>value1</td></tr>
+        </tbody>
+    </table>
 
-# Configuration options
+## Configuration options
 
 size: page size (default 20)
 
@@ -29,7 +29,7 @@ tableHeadClasses: classes to add to THEAD (default "thead-dark")
 filter: true/false (deafult true)
 
 columns: object (deafult {})
-
+### Columns
 To add filter values to column 2, and let grid fill in values for filter of column 3, use:
 columns:{
   2:{
