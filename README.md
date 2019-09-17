@@ -17,23 +17,25 @@ where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags
     </table>
 
 ## Configuration options
+<table><thead><tr><th>Name</th><th>Description</th><th>Default</th></tr></thead>
+<tbody>
+<tr><td>size</td><td>page size</td><td>20</td></tr>
+<tr><td>page</td><td>page number to show</td><td>1</td></tr>
+<tr><td>file</td><td>show filter row in thead</td><td>true</td></tr>
+<tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
+<tr><td>tableClasses</td><td>classes for table</td><td>table table-hover</td></tr>
+<tr><td>tableHeadClasses</td><td>classes for table thead</td><td>thead-dark</td></tr>
+</tbody>
+</table>
 
-size: page size (default 20)
 
-page: initial page number (default 1)
-
-tableClasses: classes to add to the table (default "table table-hover")
-
-tableHeadClasses: classes to add to THEAD (default "thead-dark")
-
-filter: true/false (deafult true)
-
-columns: object (deafult {})
 ### Columns
 To add filter values to column 2, and let grid fill in values for filter of column 3, use:
-columns:{
-  2:{
-    filter:['some',values','dummy']
-  },
-  3: {filter:null}
-}
+    columns:{
+        2:{
+            filter:['some',values','dummy']
+        },
+        3: {filter:null}
+     }
+
+
