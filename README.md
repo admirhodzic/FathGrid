@@ -33,6 +33,7 @@ where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags
 
 ### Columns
 To add filter values to column 2, and let grid fill in values for filter of column 3, use:
+
     columns:{
         2:{
             filter:['some',values','dummy']
