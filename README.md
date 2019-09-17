@@ -1,6 +1,8 @@
 # FathGrid
 No dependencies vanilla JavaScript grid with paging, sorting and filtering.
 
+![](/fathgrid.png)
+
 Just include .js file in your HTML and initialize table with:
 
     var t1=FathTable("table1",{});
