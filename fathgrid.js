@@ -10,7 +10,7 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 ((function(win){
-  win.FathTable=function(id,_config){
+  win.FathGrid=function(id,_config){
     var config={
         id:id, 
         size:20, 

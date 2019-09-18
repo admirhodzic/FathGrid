@@ -5,7 +5,7 @@ No dependencies vanilla JavaScript data table/grid with paging, sorting, filteri
 
 Just include .js file in your HTML and initialize table with:
 
-    var t1=FathTable("table1",{});
+    var t1=FathGrid("table1",{});
 
 where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags like:
 
@@ -23,17 +23,20 @@ where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags
 <tbody>
 <tr><td>size</td><td>page size</td><td>20</td></tr>
 <tr><td>page</td><td>page number to show</td><td>1</td></tr>
-<tr><td>file</td><td>show filter row in thead</td><td>true</td></tr>
+<tr><td>filterable</td><td>show filter row in thead</td><td>true</td></tr>
+<tr><td>editable</td><td>allow edits</td><td>true</td></tr>
+<tr><td>sortable</td><td>allow sorting</td><td>true</td></tr>
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
 <tr><td>tableClasses</td><td>classes for table</td><td>table table-hover</td></tr>
 <tr><td>tableHeadClasses</td><td>classes for table thead</td><td>thead-dark</td></tr>
+<tr><td>data</td><td>table data</td><td>data from HTML table content</td></tr>
 </tbody>
 </table>
 
 ### Columns
 To add filter values to column 2, and let grid fill in values for filter of column 3, use:
 
-    var t1=FathTable("table1",{
+    var t1=FathGrid("table1",{
       size:10,
       editable:true,
       filterable:true,
@@ -49,11 +52,23 @@ To add filter values to column 2, and let grid fill in values for filter of colu
         },
         4:{
           type:'email', //edit input type: text, date, email, checkbox
-        }
+        },
+        5:{type:'checkbox',
+          editable:true,
+          filter:[{name:'no',value:0},{name:'yes',value:1}]
+        },
+
       },
     });
 
-
+# API
+  .getData() // returns table (edited) data 
+  .export(format, filename) //export data
+  .render() //redraw
+  .sort(column_index, [asc|desc]) //sort data
+  .filter(column_index, query) //add filter string to a column
+  .editCell(row, col) //start editor in the cell
+ 
 # License
     GPL
 
