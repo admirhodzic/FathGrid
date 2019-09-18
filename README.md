@@ -1,7 +1,7 @@
 # FathGrid
-No dependencies vanilla JavaScript grid with paging, sorting and filtering.
+No dependencies vanilla JavaScript data table/grid with paging, sorting, filtering and editing.
 
-![](/fathgrid.png)
+![Sample screenshot](/fathgrid.png)
 
 Just include .js file in your HTML and initialize table with:
 
