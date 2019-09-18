@@ -30,6 +30,8 @@ where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags
 <tr><td>tableClasses</td><td>classes for table</td><td>table table-hover</td></tr>
 <tr><td>tableHeadClasses</td><td>classes for table thead</td><td>thead-dark</td></tr>
 <tr><td>data</td><td>table data</td><td>data from HTML table content</td></tr>
+<tr><td>getRowClasses</td><td>function to return a string with row classes</td><td>function(datarow,index){}</td></tr>
+<tr><td>onChange</td><td>function to call when cell data is changed</td><td>function(row, col, old_value, new_value){}</td></tr>
 </tbody>
 </table>
 
@@ -64,6 +66,8 @@ To add filter values to column 2, and let grid fill in values for filter of colu
 # API
   .getData() // returns table (edited) data 
   
+  .setData(newData) // sets new table data, possibly after delete or creating a new record
+
   .export(format, filename) //export data
   
   .render() //redraw
@@ -73,6 +77,7 @@ To add filter values to column 2, and let grid fill in values for filter of colu
   .filter(column_index, query) //add filter string to a column
   
   .editCell(row, col) //start editor in the cell
+
   
  
 # License

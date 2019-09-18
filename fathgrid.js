@@ -24,6 +24,7 @@ document.head.appendChild(style);
         onRender:function(){},
         onClick:function(row,col,el){editCell(row,col,el)},
         onChange:function(row,col,old,value){},
+        getRowClasses:null,
         data:null,
         editinput:undefined,
         ..._config
@@ -136,6 +137,7 @@ document.head.appendChild(style);
         fdata.slice((config.page-1)*config.size,config.page*config.size).forEach((dr,idx)=>{
             var r=document.createElement("tr");
             r.dataset.id=dr.id;
+            if(typeof config.getRowClasses=='function' && (cs=config.getRowClasses(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
             dr.forEach((x,col)=>{var c=document.createElement('td');
               if(config.columns[col+1].type=='checkbox') {
                 c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((config.columns[col+1].editable===false ||(typeof config.columns[col+1].editable =='function' && config.columns[col+1].editable(r.dataset.id,col+1)===false)) || config.editable==false)?'disabled':''} />`;
@@ -275,6 +277,7 @@ document.head.appendChild(style);
       filter:function(idx,str){thead.querySelector(".filter th:nth-child("+idx+")").querySelector(":scope input, select").value=str;render();},
       editCell:editCell,
       getData:function(){return data;},
+      setData:function(newdata){data=newdata;render();},
       getExportData:getExportData,
       export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt);},
     }
