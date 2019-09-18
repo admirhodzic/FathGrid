@@ -4,6 +4,7 @@ style.innerHTML = `
   .fathgrid th.sorted, th.sorted-desc {position: relative;}
   .fathgrid th.sorted::after {content:"▲";position:absolute;right: 1em;}
   .fathgrid th.sorted-desc::after {content:"▼";position:absolute;right: 1em;}
+  .fathgrid-export-nav {float:right;}
 `;
 document.head.appendChild(style);
 ((function(win){
@@ -60,8 +61,10 @@ document.head.appendChild(style);
     };
 
     table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
+    table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav" id="exporter${id}"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a></nav>`);
     var paginator=table.parentElement.querySelector(`#paginator${id}`);
-
+    var exporter=table.parentElement.querySelector(`#exporter${id}`);
+    exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
     ("fathgrid "+config.tableClasses).split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
 
     config.tableHeadClasses.split(" ").forEach(x=>{if(x!=='')thead.classList.add(x)});
@@ -168,6 +171,23 @@ document.head.appendChild(style);
       });
       config.editinput=i;
     };
+    var downloadFile=function(blob,filename,type="text/plain"){
+        const url = win.URL.createObjectURL(new Blob([blob], { type }));
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = (undefined===filename)?'export.txt':filename;
+        document.body.appendChild(a);
+        a.click();
+        win.URL.revokeObjectURL(url);
+    }
+    var getExportData=function(fmt){
+      var ret="";
+      if(fmt=="txt") data.forEach(r=>{ret+="\n";r.forEach(f=>{ret+=f+"\t"})});
+      if(fmt=="csv") {ret+="sep=,\n";data.forEach(r=>{r.forEach(f=>{ret+="\""+f.replace("\"","\\\"")+"\","});ret+="\n";});}
+      if(fmt=="html") {ret+="<table><tbody>";data.forEach(r=>{ret+="<tr>";r.forEach(f=>{ret+="<td>"+f+"</td>"});ret+="</tr>";});ret+="</tbody></table>";}
+      return ret;
+    }
 
     render();
     return {
@@ -179,8 +199,9 @@ document.head.appendChild(style);
       firstPage:firstPage,
       sort:sort,
       filter:function(idx,str){thead.querySelector("input:nth-child("+idx+")").value=str;render();},
-      data:data,
       editCell:editCell,
+      getData:function(){return data;},
+      getExportData:getExportData,
     }
   }
 })(typeof window !== "undefined" ? window : this));
