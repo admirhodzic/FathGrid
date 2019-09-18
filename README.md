@@ -41,9 +41,9 @@ To add filter values to column 2, and let grid fill in values for filter of colu
      }
 
 
-#License
+# License
     GPL
 
-#Commercial use license
+# Commercial use license
     $99 <a href="https://checkout.bluesnap.com/buynow/checkout?sku3644714=1&storeid=9104">Buy</a>
 
