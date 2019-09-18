@@ -634,17 +634,25 @@
   
     var t1=FathTable("table1",{
       size:10,
+      editable:true,
+      filterable:true,
+      sortable:true,
       columns:{
         1:{editable:false},
-        3:{
-          filter:null,
-          editable:function(row,col,el){return row>3}
+        2:{
+          listOfValues:[1,2,3,4,5,"Abel","Ahmed"],//list of values for edit, or a function(row,col) that return list of values
         },
-        4:{type:'email'}
+        3:{
+          filter:null,//array or null for auto-generation of filter list
+          editable:function(row,col,el){return row>3}, //is field editable
+        },
+        4:{
+          type:'email', //edit input type: text, date, email, checkbox
+        }
       },
     });
     
-  
+    //t1.export("csv");
     
     </script>
   

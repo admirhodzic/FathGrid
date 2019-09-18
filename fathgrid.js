@@ -15,9 +15,11 @@ document.head.appendChild(style);
         id:id, 
         size:20, 
         page:1, 
-        tableClasses:"table table-hover table-bordered",
+        editable:false,
+        tableClasses:"table table-hover table-bordered ",
         tableHeadClasses:"thead-light",
-        filter:true,
+        filterable:true,
+        sortable:true,
         columns:{},
         onRender:function(){},
         onClick:function(row,col,el){editCell(row,col,el)},
@@ -85,9 +87,9 @@ document.head.appendChild(style);
 
     data=data.map((x,idx)=>{x.id=idx+1;return x;});
 
-    thead.querySelectorAll("tr th").forEach((th,i) => {th.style.cursor="pointer";th.addEventListener('click',function(e){sort(i+1);stop(e);});});
+    if(config.sortable) thead.querySelectorAll("tr th").forEach((th,i) => {th.style.cursor="pointer";th.addEventListener('click',function(e){sort(i+1);stop(e);});});
 
-    if(config.filter){
+    if(config.filterable){
         var r=document.createElement("TR");r.classList.add("filter");
         thead.querySelectorAll("tr th").forEach((th,idx) => {var f=document.createElement("TH");
         var i=undefined;
@@ -141,6 +143,7 @@ document.head.appendChild(style);
         config.onRender();            
     };
     var editCell=function(row,col,el){
+      if(!config.editable) return;
       if(config.editinput!==undefined) {
         config.editinput.parentNode.innerText=config.editinput.value;
         config.editinput.remove();
@@ -150,11 +153,23 @@ document.head.appendChild(style);
       if(undefined!==config.columns[col] && (config.columns[col].editable===false || ((typeof config.columns[col].editable ==="function") && config.columns[col].editable(row,col,el)===false))) return;
       var coltype=(undefined!==config.columns[col] && undefined!==config.columns[col].type)?(config.columns[col].type):'text';
       var t=el.innerText;
-      el.innerHTML=`<input type="${coltype}" style="width:100%;" class="form-control" id="coledit" name="col" value=""/>`;
-      var i=el.querySelector(":scope #coledit");
-      i.value=t;
-      i.focus();
-      i.select();
+      var i=null;
+      if(undefined!==config.columns[col] && config.columns[col].listOfValues!==undefined){
+        el.innerHTML=`<select style="width:100%;" class="form-control" id="coledit" name="col" ></select>`;
+        i=el.querySelector(":scope #coledit");
+        var lov=config.columns[col].listOfValues;if(typeof lov=="function") lov=lov(row,col,el);
+        lov.forEach(v=>{var o=document.createElement("OPTION");o.innerText=v;o.value=v;i.add(o);});
+        i.value=t;
+        i.focus();
+        i.addEventListener("click",function(ev){ev.stopPropagation();});
+      }
+      else {
+        el.innerHTML=`<input type="${coltype}" style="width:100%;" class="form-control" id="coledit" name="col" value=""/>`;
+        i=el.querySelector(":scope #coledit");
+        i.value=t;
+        i.focus();
+        i.select();
+      }
       i.addEventListener("keydown",function(e){
         if(undefined===row) return;
         if(13==e.which) {
@@ -212,6 +227,7 @@ document.head.appendChild(style);
       editCell:editCell,
       getData:function(){return data;},
       getExportData:getExportData,
+      export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt)},
     }
   }
 })(typeof window !== "undefined" ? window : this));
