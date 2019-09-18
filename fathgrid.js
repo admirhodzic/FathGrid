@@ -69,7 +69,7 @@ document.head.appendChild(style);
     wrapper.appendChild(table);
 
     table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
-    table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav" id="exporter${id}"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a></nav>`);
+    table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav" id="exporter${id}"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</nav>`);
     var paginator=table.parentElement.querySelector(`#paginator${id}`);
     var exporter=table.parentElement.querySelector(`#exporter${id}`);
     exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
@@ -216,6 +216,7 @@ document.head.appendChild(style);
       config.editinput=i;
     };
     var downloadFile=function(blob,filename,type="text/plain"){
+        if(typeof blob=='object') {blob.save(filename);return;}
         const url = win.URL.createObjectURL(new Blob([blob], { type }));
         const a = document.createElement('a');
         a.style.display = 'none';
@@ -230,6 +231,35 @@ document.head.appendChild(style);
       if(fmt=="txt") data.forEach(r=>{ret+="\n";r.forEach(f=>{ret+=f+"\t"})});
       if(fmt=="csv") {ret+="sep=,\n";data.forEach(r=>{r.forEach(f=>{ret+="\""+f.replace("\"","\\\"")+"\","});ret+="\n";});}
       if(fmt=="html") {ret+="<table><tbody>";data.forEach(r=>{ret+="<tr>";r.forEach(f=>{ret+="<td>"+f+"</td>"});ret+="</tr>";});ret+="</tbody></table>";}
+      if(fmt=='pdf'){
+        var doc = new jsPDF('p','cm','A4');  
+        doc.setFontSize(9);
+        doc.setLineWidth(0.025);
+        var x=1;var y=1;var ii=0;
+        var cw=[],cww=0;table.querySelectorAll(":scope thead tr:nth-child(1) th").forEach(x=>{cww+=x.clientWidth;cw.push(x.clientWidth)});
+        table.querySelectorAll(":scope thead tr:nth-child(1) th").forEach(f=>{
+          var w=doc.getTextWidth(f.innerText);
+          doc.text(f.innerText,x,y,{maxWidth:(cw[ii]/cww)*20-0.1});
+          x+=(cw[ii++]/cww)*20;
+        });
+        y+=0.3;
+        data.forEach(r=>{
+          ii=0;
+          var lines=0;
+          r.forEach(f=>{
+            var w=doc.getTextWidth(f);
+            doc.text(f,x,y,{maxWidth:(cw[ii]/cww)*20-0.1});
+            lines=Math.max(lines,w/((cw[ii]/cww)*20-0.1));
+            x+=(cw[ii++]/cww)*20;
+          });
+          x=1;y+=.3*(1+Math.floor(lines+0.99));
+          doc.line(1,y-.35,20,y-.35);
+
+          if(y>28){doc.addPage();y=1;doc.setLineWidth(0.025);}
+        });        
+        doc.line(1,y-0.4,20,y-0.4);
+        return doc;
+      }
       return ret;
     }
 
@@ -246,7 +276,7 @@ document.head.appendChild(style);
       editCell:editCell,
       getData:function(){return data;},
       getExportData:getExportData,
-      export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt)},
+      export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt);},
     }
   }
 })(typeof window !== "undefined" ? window : this));
