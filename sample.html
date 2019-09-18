@@ -634,9 +634,16 @@
   
     var t1=FathTable("table1",{
       size:10,
-      onClick:function(row,col,el){t1.editCell(row,col,el);},
-      columns:{3:{filter:null}},
+      columns:{
+        1:{editable:false},
+        3:{
+          filter:null,
+          editable:function(row,col,el){return row>3}
+        },
+        4:{type:'email'}
+      },
     });
+    
   
     
     </script>

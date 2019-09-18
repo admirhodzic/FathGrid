@@ -5,6 +5,8 @@ style.innerHTML = `
   .fathgrid th.sorted::after {content:"▲";position:absolute;right: 1em;}
   .fathgrid th.sorted-desc::after {content:"▼";position:absolute;right: 1em;}
   .fathgrid-export-nav {float:right;}
+  .fathgrid-wrapper {position:relative;}
+  .fathgrid-wrapper .page-info {position:absolute;top:0}
 `;
 document.head.appendChild(style);
 ((function(win){
@@ -13,12 +15,12 @@ document.head.appendChild(style);
         id:id, 
         size:20, 
         page:1, 
-        tableClasses:"table table-hover",
+        tableClasses:"table table-hover table-bordered",
         tableHeadClasses:"thead-light",
         filter:true,
         columns:{},
         onRender:function(){},
-        onClick:function(row,col,el){},
+        onClick:function(row,col,el){editCell(row,col,el)},
         onEdit:function(row,col,old,value){},
         data:null,
         editinput:undefined,
@@ -35,10 +37,10 @@ document.head.appendChild(style);
         <ul class="pagination" >
           <li class="page-item"><a class="page-link firstpage" title="First" href="#">&#x2503;&#x23F4;</a></li>
           <li class="page-item"><a class="page-link prevpage" title="Previous" href="#">&#x23F4;</a></li>
-          <li class="page-item active"><a class="page-link gotopage" title="Goto page" href="javascript:void(0)">${config.page}</a></li>
+          <li class="page-item active"><a class="page-link gotopage" title="Goto page" href="javascript:void(0)">${config.page} / ${Math.floor((fdata.length+(config.size-1))/config.size)}</a></li>
           <li class="page-item"><a class="page-link nextpage" title="Next" href="#">&#x23f5;</a></li>
           <li class="page-item"><a class="page-link lastpage" title="Last" href="#">&#x23f5;&#x2503;</a></li>
-        </ul><span>${(config.page-1)*config.size}-${Math.min(fdata.length,config.page*config.size)} of ${data.length!=fdata.length?`${fdata.length}/ `:''} ${data.length}</span>
+        </ul><span class="page-info">${(config.page-1)*config.size}-${Math.min(fdata.length,config.page*config.size)} of ${data.length!=fdata.length?`${fdata.length}/ `:''} ${data.length}</span>
       `;
     }
     var nextPage=function(){config.page=Math.floor(Math.min(config.page+1,(fdata.length+config.size-1)/config.size));render();};
@@ -59,6 +61,10 @@ document.head.appendChild(style);
       thead.querySelector(" th:nth-child("+(i)+")").classList.add((isSorted || desc===true)?"sorted-desc":"sorted");
       render();
     };
+
+    var wrapper=this.document.createElement("DIV");wrapper.classList.add("fathgrid-wrapper");
+    table.parentNode.insertBefore(wrapper,table);
+    wrapper.appendChild(table);
 
     table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
     table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav" id="exporter${id}"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a></nav>`);
@@ -138,9 +144,13 @@ document.head.appendChild(style);
       if(config.editinput!==undefined) {
         config.editinput.parentNode.innerText=config.editinput.value;
         config.editinput.remove();
+        config.editinput=undefined;
       }
+      
+      if(undefined!==config.columns[col] && (config.columns[col].editable===false || ((typeof config.columns[col].editable ==="function") && config.columns[col].editable(row,col,el)===false))) return;
+      var coltype=(undefined!==config.columns[col] && undefined!==config.columns[col].type)?(config.columns[col].type):'text';
       var t=el.innerText;
-      el.innerHTML='<input style="width:100%;" id="coledit" name="col" value=""/>';
+      el.innerHTML=`<input type="${coltype}" style="width:100%;" class="form-control" id="coledit" name="col" value=""/>`;
       var i=el.querySelector(":scope #coledit");
       i.value=t;
       i.focus();
@@ -198,7 +208,7 @@ document.head.appendChild(style);
       lastPage:lastPage,
       firstPage:firstPage,
       sort:sort,
-      filter:function(idx,str){thead.querySelector("input:nth-child("+idx+")").value=str;render();},
+      filter:function(idx,str){thead.querySelector(".filter th:nth-child("+idx+")").querySelector(":scope input, select").value=str;render();},
       editCell:editCell,
       getData:function(){return data;},
       getExportData:getExportData,
