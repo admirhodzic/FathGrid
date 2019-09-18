@@ -63,11 +63,17 @@ To add filter values to column 2, and let grid fill in values for filter of colu
 
 # API
   .getData() // returns table (edited) data 
+  
   .export(format, filename) //export data
+  
   .render() //redraw
+  
   .sort(column_index, [asc|desc]) //sort data
+  
   .filter(column_index, query) //add filter string to a column
+  
   .editCell(row, col) //start editor in the cell
+  
  
 # License
     GPL
