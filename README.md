@@ -33,12 +33,25 @@ where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags
 ### Columns
 To add filter values to column 2, and let grid fill in values for filter of column 3, use:
 
-    columns:{
+    var t1=FathTable("table1",{
+      size:10,
+      editable:true,
+      filterable:true,
+      sortable:true,
+      columns:{
+        1:{editable:false},
         2:{
-            filter:['some',values','dummy']
+          listOfValues:[1,2,3,4,5,"Abel","SomeName"], //list of values for edit, or a function(row,col) that return list of values
         },
-        3: {filter:null}
-     }
+        3:{
+          filter:null, //array or null for auto-generation of filter list
+          editable:function(row,col,el){return row>3}, //is field editable
+        },
+        4:{
+          type:'email', //edit input type: text, date, email, checkbox
+        }
+      },
+    });
 
 
 # License
