@@ -1,7 +1,7 @@
 # FathGrid
-No dependencies vanilla JavaScript grid with paging, sorting and filtering.
+No dependencies vanilla JavaScript data table/grid with paging, sorting, filtering and editing.
 
-![](/fathgrid.png)
+![Sample screenshot](/fathgrid.png)
 
 Just include .js file in your HTML and initialize table with:
 
@@ -29,7 +29,6 @@ where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags
 <tr><td>tableHeadClasses</td><td>classes for table thead</td><td>thead-dark</td></tr>
 </tbody>
 </table>
-
 
 ### Columns
 To add filter values to column 2, and let grid fill in values for filter of column 3, use:
