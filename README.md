@@ -64,8 +64,8 @@ To add filter values to column 2, and let grid fill in values for filter of colu
     });
 
 # Export
-Text, CSV and HTML export are supported. 
-To enable *PDF export*, include jsPDF.js in your page and PDF export functionality will be automatically enabled.
+Text, CSV, HTML and XLS export formats are supported.<br/>
+To enable PDF export, include jsPDF.js in your page and PDF export functionality will be automatically enabled.
 
 # API
   .getData() // returns table (edited) data 

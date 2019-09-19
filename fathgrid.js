@@ -70,7 +70,7 @@ document.head.appendChild(style);
     wrapper.appendChild(table);
 
     table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
-    table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav" id="exporter${id}"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</nav>`);
+    table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav" id="exporter${id}"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</nav>`);
     var paginator=table.parentElement.querySelector(`#paginator${id}`);
     var exporter=table.parentElement.querySelector(`#exporter${id}`);
     exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
@@ -232,7 +232,23 @@ document.head.appendChild(style);
       var ret="";
       if(fmt=="txt") data.forEach(r=>{ret+="\n";r.forEach(f=>{ret+=f+"\t"})});
       if(fmt=="csv") {ret+="sep=,\n";data.forEach(r=>{r.forEach(f=>{ret+="\""+f.replace("\"","\\\"")+"\","});ret+="\n";});}
-      if(fmt=="html") {ret+="<table><tbody>";data.forEach(r=>{ret+="<tr>";r.forEach(f=>{ret+="<td>"+f+"</td>"});ret+="</tr>";});ret+="</tbody></table>";}
+      if(fmt=="html" || fmt=='xls') {ret+="<table><tbody>";data.forEach(r=>{ret+="<tr>";r.forEach(f=>{ret+="<td>"+f+"</td>"});ret+="</tr>";});ret+="</tbody></table>";}
+      if(fmt=='xls'){
+        const TEMPLATE_XLS = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"/>
+        <head><!--[if gte mso 9]><xml>
+        <x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{title}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>
+        <![endif]--></head>
+        <body>{table}</body></html>`;
+        const MIME_XLS = 'application/vnd.ms-excel;base64,';
+
+        const parameters = {
+          title: "Export",
+          table: ret,
+        };
+        return TEMPLATE_XLS.replace(/{(\w+)}/g, (x, y) => parameters[y]);        
+      }
       if(fmt=='pdf'){
         var doc = new jsPDF('p','cm','A4');  
         doc.setFontSize(9);
@@ -279,7 +295,7 @@ document.head.appendChild(style);
       getData:function(){return data;},
       setData:function(newdata){data=newdata;render();},
       getExportData:getExportData,
-      export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt);},
+      export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt=='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
     }
   }
 })(typeof window !== "undefined" ? window : this));
