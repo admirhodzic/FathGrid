@@ -16,15 +16,13 @@ document.head.appendChild(style);
         size:20, 
         page:1, 
         editable:false,
-        tableClasses:"table table-hover table-bordered ",
-        tableHeadClasses:"thead-light",
         filterable:true,
         sortable:true,
         columns:{},
         onRender:function(){},
         onClick:function(row,col,el){editCell(row,col,el)},
         onChange:function(row,col,old,value){},
-        getRowClasses:null,
+        rowClass:null,
         data:null,
         editinput:undefined,
         ..._config
@@ -34,6 +32,7 @@ document.head.appendChild(style);
     var table=document.getElementById(id);
     var thead=table.querySelector(":scope thead");
     var tbody=table.querySelector(":scope tbody");
+    var editinput=undefined;
 
     var renderPaginator=function(){
       return `
@@ -74,9 +73,9 @@ document.head.appendChild(style);
     var paginator=table.parentElement.querySelector(`#paginator${id}`);
     var exporter=table.parentElement.querySelector(`#exporter${id}`);
     exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
-    ("fathgrid "+config.tableClasses).split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
+    ("fathgrid ").split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
 
-    config.tableHeadClasses.split(" ").forEach(x=>{if(x!=='')thead.classList.add(x)});
+    
     
     if(data===null || data.length===0) table.querySelectorAll(":scope tbody tr").forEach(tr => {
       var row=[];
@@ -86,7 +85,7 @@ document.head.appendChild(style);
       data.push(row);
     });
 
-    data=data.map((x,idx)=>{x.id=idx+1;return x;});
+    data=data.map((x,idx)=>{x.id=idx+1;return x;}); //add IDs to data rows
 
     if(config.sortable) thead.querySelectorAll("tr th").forEach((th,i) => {th.style.cursor="pointer";th.addEventListener('click',function(e){sort(i+1);stop(e);});});
 
@@ -137,7 +136,7 @@ document.head.appendChild(style);
         fdata.slice((config.page-1)*config.size,config.page*config.size).forEach((dr,idx)=>{
             var r=document.createElement("tr");
             r.dataset.id=dr.id;
-            if(typeof config.getRowClasses=='function' && (cs=config.getRowClasses(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
+            if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
             dr.forEach((x,col)=>{var c=document.createElement('td');
               if(config.columns[col+1].type=='checkbox') {
                 c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((config.columns[col+1].editable===false ||(typeof config.columns[col+1].editable =='function' && config.columns[col+1].editable(r.dataset.id,col+1)===false)) || config.editable==false)?'disabled':''} />`;
@@ -163,10 +162,10 @@ document.head.appendChild(style);
     };
     var editCell=function(row,col,el){
       if(!config.editable) return;
-      if(config.editinput!==undefined) {
-        config.editinput.parentNode.innerText=config.editinput.value;
-        config.editinput.remove();
-        config.editinput=undefined;
+      if(editinput!==undefined) {
+        editinput.parentNode.innerText=editinput.value!=''?editinput.value:editinput.dataset.originalvalue;
+        editinput.remove();
+        editinput=undefined;
       }
       
       if(undefined!==config.columns[col] && (config.columns[col].editable===false || ((typeof config.columns[col].editable ==="function") && config.columns[col].editable(row,col,el)===false))) return;
@@ -181,7 +180,6 @@ document.head.appendChild(style);
         lov.forEach(v=>{var o=document.createElement("OPTION");o.innerText=v;o.value=v;i.add(o);});
         i.value=t;
         i.focus();
-        i.addEventListener("click",function(ev){ev.stopPropagation();});
         i.addEventListener("change",function(e){config.onChange(row,col,data[row-1][col-1],e.srcElement.value);});
       }
       else {
@@ -191,9 +189,12 @@ document.head.appendChild(style);
         i.focus();
         i.select();
       }
+      i.addEventListener("click",function(ev){ev.stopPropagation();});
+      i.dataset.originalvalue=t;
+
       i.addEventListener("keydown",function(e){
         if(undefined===row) return;
-        if(13==e.which) {
+        if(13==e.which || 9==e.which) {
           var old=data[row-1][col-1];
           data[row-1][col-1]=e.srcElement.value;
           config.onChange(row,col,old,e.srcElement.value);
@@ -201,7 +202,7 @@ document.head.appendChild(style);
         }
         
         switch(e.which){
-          case 9://esc
+          
           case 27://esc
             render();
             break;
@@ -215,7 +216,7 @@ document.head.appendChild(style);
             break;
         }
       });
-      config.editinput=i;
+      editinput=i;
     };
     var downloadFile=function(blob,filename,type="text/plain"){
         if(typeof blob=='object') {blob.save(filename);return;}
@@ -232,7 +233,7 @@ document.head.appendChild(style);
       var ret="";
       if(fmt=="txt") data.forEach(r=>{ret+="\n";r.forEach(f=>{ret+=f+"\t"})});
       if(fmt=="csv") {ret+="sep=,\n";data.forEach(r=>{r.forEach(f=>{ret+="\""+f.replace("\"","\\\"")+"\","});ret+="\n";});}
-      if(fmt=="html" || fmt=='xls') {ret+="<table><tbody>";data.forEach(r=>{ret+="<tr>";r.forEach(f=>{ret+="<td>"+f+"</td>"});ret+="</tr>";});ret+="</tbody></table>";}
+      if(fmt=="html" || fmt=='xls') {ret+="<table><tbody>"+data.map(r=>{return "<tr>"+r.map(f=>{return "<td>"+f+"</td>"}).join('')+"</tr>";}).join('')+"</tbody></table>";}
       if(fmt=='xls'){
         const TEMPLATE_XLS = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -241,7 +242,6 @@ document.head.appendChild(style);
         <x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{title}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>
         <![endif]--></head>
         <body>{table}</body></html>`;
-        const MIME_XLS = 'application/vnd.ms-excel;base64,';
 
         const parameters = {
           title: "Export",
@@ -292,8 +292,8 @@ document.head.appendChild(style);
       sort:sort,
       filter:function(idx,str){thead.querySelector(".filter th:nth-child("+idx+")").querySelector(":scope input, select").value=str;render();},
       editCell:editCell,
-      getData:function(){return data;},
-      setData:function(newdata){data=newdata;render();},
+      getData:function(){return data.map(x=>x);},
+      setData:function(newdata){data=[];newdata.map(x=>data.push(x));render();},
       getExportData:getExportData,
       export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt=='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
     }

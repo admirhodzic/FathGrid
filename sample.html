@@ -19,8 +19,8 @@
   <body>
       <div class="container-fluid">
     <h1>FathGrid sample!</h1>
-    <table  id="table1">
-      <thead>
+    <table  id="table1" class="table table-hover table-bordered ">
+      <thead class="thead-light">
         <tr>
           <th>ID</th>
           <th>Name</th>
@@ -742,7 +742,7 @@
       filterable:true,
       sortable:true,
       onChange:function(row,col,old,value){console.log("onChange:",row,col,old,value)},
-      getRowClasses:function(dr,idx){return dr.id>3&&dr.id<6?'table-info':(dr.id>6&&dr.id<11?'table-warning':'')},
+      rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
       columns:{
         1:{editable:false},
         2:{

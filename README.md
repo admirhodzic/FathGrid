@@ -27,10 +27,8 @@ where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags
 <tr><td>editable</td><td>allow edits</td><td>true</td></tr>
 <tr><td>sortable</td><td>allow sorting</td><td>true</td></tr>
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
-<tr><td>tableClasses</td><td>classes for table</td><td>table table-hover</td></tr>
-<tr><td>tableHeadClasses</td><td>classes for table thead</td><td>thead-dark</td></tr>
 <tr><td>data</td><td>table data</td><td>data from HTML table content</td></tr>
-<tr><td>getRowClasses</td><td>function to return a string with row classes</td><td>function(datarow,index){}</td></tr>
+<tr><td>rowClass</td><td>function to return a string with row classes. Use it to change row appearance based on some criteria.</td><td>function(data,index){}</td></tr>
 <tr><td>onChange</td><td>function to call when cell data is changed</td><td>function(row, col, old_value, new_value){}</td></tr>
 </tbody>
 </table>
