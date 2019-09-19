@@ -1,5 +1,5 @@
 # FathGrid
-No dependencies vanilla JavaScript data table/grid with paging, sorting, filtering and editing.
+No dependencies vanilla JavaScript data table/grid with paging, sorting, filtering, export and editing.
 
 ![Sample screenshot](/fathgrid.png)
 
