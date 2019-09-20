@@ -19,7 +19,7 @@ where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags
     </table>
 
 # Table Data
-Table data can be set inline, in your HTML, or dinamycally loaded with setData metod or configuration option.
+Table data can be set inline, in your HTML, or dynamically loaded with setData method or configuration option.
 ## Inline Data
 Simply add all your data in table body. FathGrid will load all content and show only first page.
 Sample:
@@ -35,7 +35,7 @@ Sample:
     </table>
 
 
-## Dinamyc data
+## Dynamic data
 Table content can be empty and data loaded from JavaScript array using setData method:
     <table id="table1">
         <thead>
