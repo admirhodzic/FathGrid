@@ -18,10 +18,10 @@ document.head.appendChild(style);
         editable:false,
         filterable:true,
         sortable:true,
-        columns:{},
+        columns:[],
         onRender:function(){},
-        onClick:function(row,col,el){editCell(row,col,el)},
-        onChange:function(row,col,old,value){},
+        onClick:function(data,col,el){editCell(data.rownum,col,el)},
+        onChange:function(data,col,old,value){},
         rowClass:null,
         data:null,
         editinput:undefined,
@@ -75,40 +75,45 @@ document.head.appendChild(style);
     exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
     ("fathgrid ").split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
 
-    
-    
-    if(data===null || data.length===0) table.querySelectorAll(":scope tbody tr").forEach(tr => {
+    if(data===null || data.length===0) table.querySelectorAll(":scope tbody tr").forEach((tr,idx) => {
       var row=[];
       tr.querySelectorAll(":scope td").forEach(td => {
         row.push(td.innerHTML);
       });
+      row.id=(tr.dataset.id===undefined)?idx+1:tr.dataset.id;
       data.push(row);
     });
+    else{
+      data=data.map((x,idx)=>{if(undefined===x.id) x.id=idx+1;return x;}); //add IDs to data rows
+    }
+    data=data.map((x,idx)=>{x.rownum=idx+1;return x;});//add rownum prop
 
-    data=data.map((x,idx)=>{x.id=idx+1;return x;}); //add IDs to data rows
+    thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={}});
 
     if(config.sortable) thead.querySelectorAll("tr th").forEach((th,i) => {th.style.cursor="pointer";th.addEventListener('click',function(e){sort(i+1);stop(e);});});
 
     if(config.filterable){
         var r=document.createElement("TR");r.classList.add("filter");
-        thead.querySelectorAll("tr th").forEach((th,idx) => {var f=document.createElement("TH");
-        var i=undefined;
-        if(config.columns[idx+1]!==undefined && config.columns[idx+1].filter!==this.undefined) {
-            i=document.createElement("SELECT");i.add(document.createElement("OPTION"));
-            //i.setAttribute("multiple","multiple");
-            var ff=config.columns[idx+1].filter;
-            if(null===ff) {ff=[];fdata.forEach(v=>{if(!ff.includes(v[idx]))ff.push(v[idx])});ff.sort();}
-            ff.forEach(v=>{var o=document.createElement("OPTION");o.innerText=((typeof v == 'object')?v.name:v);o.value=(typeof v =='object')?v.value:v;i.add(o);});
-        } else {
-          i=document.createElement("INPUT");
-          i.setAttribute("type",(undefined===config.columns[idx+1])?'text':config.columns[idx+1].type);
-        }
-        i.classList.add("form-control");
-        i.style.width="100%";
+        thead.querySelectorAll("tr th").forEach((th,idx) => {
+          var f=document.createElement("TH");
+          var i=undefined;
+          if(config.columns[idx]!==undefined && config.columns[idx].filter!==this.undefined) {
+              i=document.createElement("SELECT");i.add(document.createElement("OPTION"));
+              //i.setAttribute("multiple","multiple");
+              var ff=config.columns[idx].filter;
+              if(null===ff) {ff=[];fdata.forEach(v=>{if(!ff.includes(v[idx]))ff.push(v[idx])});ff.sort();}
+              ff.forEach(v=>{var o=document.createElement("OPTION");o.innerText=((typeof v == 'object')?v.name:v);o.value=(typeof v =='object')?v.value:v;i.add(o);});
+          } else {
+            i=document.createElement("INPUT");
+            i.setAttribute("type",(undefined===config.columns[idx])?'text':config.columns[idx].type);
+          }
+          i.classList.add("form-control");
+          i.style.width="100%";
 
-        i.dataset.i=idx;
-        i.type
-        f.append(i);r.append(f);});
+          i.dataset.i=idx;
+          i.type
+          f.append(i);r.append(f);
+        });
         thead.append(r);
         r.querySelectorAll(":scope input, select").forEach(i=>{i.addEventListener("change",function(e){render();});});
     }
@@ -120,28 +125,35 @@ document.head.appendChild(style);
 
         fdata=data.filter(x=>{
             var ok=true;
-            thead.querySelectorAll(":scope input, select").forEach((i,col)=>{
+
+            thead.querySelectorAll(":scope input, select").forEach((i)=>{
               var opts=Array.from(i.querySelectorAll(":scope option:checked"),y=>y.value);
+              console.log(typeof x[i.dataset.i]);
               if(opts.filter(a=>a!='').length>1){
                 var ok2=false;
                 opts.forEach(y=>{if(y!='' && x[i.dataset.i].includes(y)) ok2=true;});
                 if(!ok2) ok=false;
               }
               else if(i.type==='checkbox') {if(i.checked && !isChecked(x[i.dataset.i])) ok=false;}
-              else if(config.columns[col+1].type==='checkbox'){ if(i.value!='' && !(x[i.dataset.i]==i.value)) ok=false;}
-              else if(i.value!='' && !x[i.dataset.i].includes(i.value)) ok=false;
+              else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!='' && !(x[i.dataset.i]==i.value)) ok=false;}
+              else if(i.value!='' && (typeof x[i.dataset.i] =='number') && x[i.dataset.i]!=(i.value)) ok=false;
+              else if(i.value!='' && (typeof x[i.dataset.i] =='string')&& !x[i.dataset.i].includes(i.value)) ok=false;
             });
             return ok;
         });
         fdata.slice((config.page-1)*config.size,config.page*config.size).forEach((dr,idx)=>{
             var r=document.createElement("tr");
             r.dataset.id=dr.id;
+            r.dataset.rownum=dr.rownum;
             if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
-            dr.forEach((x,col)=>{var c=document.createElement('td');
-              if(config.columns[col+1].type=='checkbox') {
-                c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((config.columns[col+1].editable===false ||(typeof config.columns[col+1].editable =='function' && config.columns[col+1].editable(r.dataset.id,col+1)===false)) || config.editable==false)?'disabled':''} />`;
+            
+            config.columns.forEach((column,col)=>{
+              var c=document.createElement('td');
+              var x=column.name!==undefined?dr[column.name]:dr[col];
+              if(column.type=='checkbox') {
+                c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((column.editable===false ||(typeof column.editable =='function' && column.editable(dr,col+1)===false)) || config.editable==false)?'disabled':''} />`;
                 c.querySelector(":scope input[type=checkbox]").addEventListener("click",function(e){
-                  config.onChange(r.dataset.id,col,!e.srcElement.checked,e.srcElement.checked);
+                  config.onChange(dr,col,!e.srcElement.checked,e.srcElement.checked);
                 });
               }
               else c.innerHTML=x;
@@ -157,10 +169,10 @@ document.head.appendChild(style);
         paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
         paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){config.page=Math.max(1,Math.min(fdata.length/config.page,parseInt(prompt("Go to page number",config.page)||0)));render();stop(e);})});
 
-        tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){config.onClick(e.srcElement.parentNode.dataset.id,[...e.srcElement.parentNode.children].indexOf(e.srcElement)+1,e.srcElement);})});
+        tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){config.onClick(data[e.srcElement.parentNode.dataset.rownum-1],[...e.srcElement.parentNode.children].indexOf(e.srcElement)+1,e.srcElement);})});
         config.onRender();            
     };
-    var editCell=function(row,col,el){
+    var editCell=function(rownum,col,el){
       if(!config.editable) return;
       if(editinput!==undefined) {
         editinput.parentNode.innerText=editinput.value!=''?editinput.value:editinput.dataset.originalvalue;
@@ -168,19 +180,20 @@ document.head.appendChild(style);
         editinput=undefined;
       }
       
-      if(undefined!==config.columns[col] && (config.columns[col].editable===false || ((typeof config.columns[col].editable ==="function") && config.columns[col].editable(row,col,el)===false))) return;
-      if(config.columns[col].type==='checkbox') return;
-      var coltype=(undefined!==config.columns[col] && undefined!==config.columns[col].type)?(config.columns[col].type):'text';
+      var column=config.columns[col-1];
+      if(undefined!==column && (column.editable===false || ((typeof column.editable ==="function") && column.editable(data[rownum-1],col,el)===false))) return;
+      if(column.type==='checkbox') return;
+      var coltype=(undefined!==column && undefined!==column.type)?(column.type):'text';
       var t=el.innerText;
       var i=null;
-      if(undefined!==config.columns[col] && config.columns[col].listOfValues!==undefined){
+      if(undefined!==column && column.listOfValues!==undefined){
         el.innerHTML=`<select style="width:100%;" class="form-control" id="coledit" name="col" ></select>`;
         i=el.querySelector(":scope #coledit");
-        var lov=config.columns[col].listOfValues;if(typeof lov=="function") lov=lov(row,col,el);
+        var lov=column.listOfValues;if(typeof lov=="function") lov=lov(data[rownum-1],col,el);
         lov.forEach(v=>{var o=document.createElement("OPTION");o.innerText=v;o.value=v;i.add(o);});
         i.value=t;
         i.focus();
-        i.addEventListener("change",function(e){config.onChange(row,col,data[row-1][col-1],e.srcElement.value);});
+        i.addEventListener("change",function(e){config.onChange(data[rownum-1],col,data[rownum-1][col-1],e.srcElement.value);});
       }
       else {
         el.innerHTML=`<input type="${coltype}" style="width:100%;" class="form-control" id="coledit" name="col" value=""/>`;
@@ -193,11 +206,11 @@ document.head.appendChild(style);
       i.dataset.originalvalue=t;
 
       i.addEventListener("keydown",function(e){
-        if(undefined===row) return;
+        if(undefined===rownum) return;
         if(13==e.which || 9==e.which) {
-          var old=data[row-1][col-1];
-          data[row-1][col-1]=e.srcElement.value;
-          config.onChange(row,col,old,e.srcElement.value);
+          var old=data[rownum-1][col-1];
+          data[rownum-1][col-1]=e.srcElement.value;
+          config.onChange(data[rownum-1],col,old,e.srcElement.value);
           render();
         }
         

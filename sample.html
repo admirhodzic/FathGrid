@@ -741,24 +741,30 @@
       editable:true,
       filterable:true,
       sortable:true,
-      onChange:function(row,col,old,value){console.log("onChange:",row,col,old,value)},
+      onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value)},
       rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
-      columns:{
-        1:{editable:false},
-        2:{
-          listOfValues:[1,2,3,4,5,"Abel","Ahmed"],//list of values for edit, or a function(row,col) that return list of values
+      columns:[
+        {editable:false},
+        {
+          listOfValues:[1,2,3,4,5,"Abel","Ahmed"],//list of values for edit, or a function(data,col) which returns list of values
         },
-        3:{
+        {
           filter:null,//array or null for auto-generation of filter list
-          editable:function(row,col,el){return row>3}, //is field editable
+          editable:function(data,col,el){return data.id>3}, //is field editable
         },
-        4:{
+        {
           type:'email', //edit input type: text, date, email, checkbox
         },
-        5:{type:'checkbox',editable:true,
+        {type:'checkbox',editable:true,
           filter:[{name:'no',value:0},{name:'yes',value:1}]
         },
-      },
+      ],
+      data:[
+        [10,"dfewsgv sdfdsgfsd","dvfdcvxcdA","3r2dfsdf@cxvfdcv.com",0],
+        [20,"dfewsgv sdfdsgfsd","dvfdcvxcdA","3r2dfsdf@cxvfdcv.com",0],
+        [30,"dfgserdgvs dfefew","cvfregrv","fggh@derew.com",1],
+        [40,"dsgfsreg dfsd","vsd f A","erew@dvvrfgsdfg.com",0]
+      ]
     });
     
     //t1.export("csv");
