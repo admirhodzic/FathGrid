@@ -315,7 +315,7 @@ document.head.appendChild(style);
       filter:function(idx,str){thead.querySelector(".filter th:nth-child("+idx+")").querySelector(":scope input, select").value=str;render();},
       getFilter:function(){
         r={};
-        thead.querySelectorAll(":scope input, select").forEach((i)=>{if(''!=i.value) r[i.dataset.i+1]=i.value});
+        thead.querySelectorAll(":scope input, select").forEach((i)=>{if(''!=i.value) r[parseInt(i.dataset.i)+1]=i.value});
         return r;
       },
       editCell:editCell,
