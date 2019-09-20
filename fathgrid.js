@@ -7,6 +7,19 @@ style.innerHTML = `
   .fathgrid-export-nav {float:right;}
   .fathgrid-wrapper {position:relative;}
   .fathgrid-wrapper .page-info {position:absolute;top:0}
+  .fathgrid-wrapper .dropdown {    position: relative;    display: inline-block;  }
+  .fathgrid-wrapper .dropdown-content {
+    display: none;
+    position: absolute;
+    right:0;
+    background-color: #f9f9f9;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  .dropdown:hover .dropdown-content {    display: block;  }  
+  .dropdown:hover .dropdown-content a {display:block;padding:0.1em 2em;margin:2px 0;}
+  .dropdown:hover .dropdown-content a:hover {background-color:#eee;}
 `;
 document.head.appendChild(style);
 ((function(win){
@@ -78,10 +91,10 @@ document.head.appendChild(style);
     wrapper.appendChild(table);
 
     table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
-    table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav" id="exporter${id}"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</nav>`);
+    table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav dropdown" id="exporter${id}"><a href="javascript:void(0)">Export</a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`);
     var paginator=table.parentElement.querySelector(`#paginator${id}`);
     var exporter=table.parentElement.querySelector(`#exporter${id}`);
-    exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
+    exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
     ("fathgrid ").split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
 
     if(data===null || data.length===0) table.querySelectorAll(":scope tbody tr").forEach((tr,idx) => {
