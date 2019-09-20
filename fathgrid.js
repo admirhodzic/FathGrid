@@ -50,11 +50,20 @@ document.head.appendChild(style);
     var lastPage=function(){config.page=Math.floor((fdata.length+config.size-1)/config.size);render();};
     var firstPage=function(){config.page=1;render();};
     
+    var getSort=function(){
+      var e=thead.querySelector("thead tr:nth-child(1) th.sorted");
+      if(e!==null) return [...e.parentNode.children].indexOf(e)+1;
+      e=thead.querySelector("thead tr:nth-child(1) th.sorted-desc");
+      if(e!==null) return -([...e.parentNode.children].indexOf(e)+1);
+      return null;
+    };
+
     var sort=function(i,desc){
       var isSorted=thead.querySelector("th:nth-child("+(i)+")").classList.contains("sorted");
 
       data.sort((a,b)=>{
-        a=a[i-1].replace(/(<([^>]+)>)/gi,"");b=b[i-1].replace(/(<([^>]+)>)/gi,"");
+        a=('number'==typeof a[i-1])?(a[i-1]):a[i-1].replace(/(<([^>]+)>)/gi,"");
+        b=('number'==typeof b[i-1])?(b[i-1]):b[i-1].replace(/(<([^>]+)>)/gi,"");
         return ((isSorted || (desc===true))?-1:1)*(isNaN(parseFloat(a))? ( (a<b?-1:(a>b)?1:0) ) :(a-b));
       });
 
@@ -128,7 +137,6 @@ document.head.appendChild(style);
 
             thead.querySelectorAll(":scope input, select").forEach((i)=>{
               var opts=Array.from(i.querySelectorAll(":scope option:checked"),y=>y.value);
-              console.log(typeof x[i.dataset.i]);
               if(opts.filter(a=>a!='').length>1){
                 var ok2=false;
                 opts.forEach(y=>{if(y!='' && x[i.dataset.i].includes(y)) ok2=true;});
@@ -303,7 +311,13 @@ document.head.appendChild(style);
       lastPage:lastPage,
       firstPage:firstPage,
       sort:sort,
+      getSort:getSort,
       filter:function(idx,str){thead.querySelector(".filter th:nth-child("+idx+")").querySelector(":scope input, select").value=str;render();},
+      getFilter:function(){
+        r={};
+        thead.querySelectorAll(":scope input, select").forEach((i)=>{if(''!=i.value) r[i.dataset.i+1]=i.value});
+        return r;
+      },
       editCell:editCell,
       getData:function(){return data.map(x=>x);},
       setData:function(newdata){data=[];newdata.map(x=>data.push(x));render();},

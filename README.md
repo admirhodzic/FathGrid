@@ -118,7 +118,11 @@ To enable PDF export, include jsPDF.js in your page and PDF export functionality
   
   .sort(column_index, [asc|desc]) //sort data
   
+  .getSort() //returns 1-based column index, negative if using descending sort order
+  
   .filter(column_index, query) //add filter string to a column
+  
+  .getFilter() //returns array of column query strings
   
   .editCell(rownum, col) //start editor in the cell
 
