@@ -50,7 +50,12 @@ fetch('https://jsonplaceholder.typicode.com/users')
         onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
         columns:[
             {editable:false, name:'id'},
-            {name:'userId', filter:users,listOfValues:users,value:function(item){return users.find(i=>i.value==item.userId).name;}},
+            {
+              name:'userId', 
+              filter:users,
+              listOfValues:users,
+              value:function(item){return users.find(i=>i.value==item.userId).name;}
+            },
             {name:'title'},
             {name:'body'},
         ],

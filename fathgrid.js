@@ -72,19 +72,20 @@ document.head.appendChild(style);
       return null;
     };
 
-    var vv=function(item,idx){
-      return config.columns[idx].name!==undefined?(item[config.columns[idx].name]):(item[idx]);
-    };
+    var vv=function(item,idx){return config.columns[idx].name!==undefined?(item[config.columns[idx].name]):(item[idx]);};
+    var vv2=function(item,idx){return (config.columns[idx].value!==undefined)?(config.columns[idx].value(item)):(vv(item,idx));};
     var ss=function(item,idx,v){
-      if(config.columns[idx].name!==undefined)(item[config.columns[idx].name]=v); else (item[idx]=v);
+      if(config.columns[idx].name!==undefined) item[config.columns[idx].name]=v; 
+      else item[idx]=v;
     };
 
     var sort=function(i,desc){
       var isSorted=thead.querySelector("th:nth-child("+(i)+")").classList.contains("sorted");
-      var i1=i+1;
+      var i1=i-1;
+
       data.sort((a,b)=>{
-        a=('number'==typeof vv(a,i1))?(vv(a,i1)):vv(a,i1).replace(/(<([^>]+)>)/gi,"");
-        b=('number'==typeof vv(b,i1))?(vv(b,i1)):vv(b,i1).replace(/(<([^>]+)>)/gi,"");
+        a=('number'==typeof vv2(a,i1))?(vv2(a,i1)):vv2(a,i1).replace(/(<([^>]+)>)/gi,"");
+        b=('number'==typeof vv2(b,i1))?(vv2(b,i1)):vv2(b,i1).replace(/(<([^>]+)>)/gi,"");
         return ((isSorted || (desc===true))?-1:1)*(isNaN(parseFloat(a))? ( (a<b?-1:(a>b)?1:0) ) :(a-b));
       });
 
