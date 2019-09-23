@@ -57,6 +57,29 @@ Table content can be empty and data loaded from JavaScript array using setData m
       t1.setData([['10','...'],['22','...'],['30','...']]);
     </script>
 
+## JSON data objects
+Table content can be set using array of JSON objects. In that case, columns definition must include "name" property which specifies object attribute name to display:
+
+    fetch('https://jsonplaceholder.typicode.com/posts')
+      .then(response => response.json())
+      .then(json => {
+        var t1=FathGrid("table1",{
+          columns:[
+              {editable:false, name:'id'},
+              {
+                name:'userId', 
+                filter:users,
+                listOfValues:users,
+                value:function(item){return users.find(i=>i.value==item.userId).name;}
+              },
+              {name:'title'},
+              {name:'body'},
+          ],
+          data:json,
+        });
+      })
+
+
 
 
 
@@ -76,31 +99,40 @@ Table content can be empty and data loaded from JavaScript array using setData m
 </table>
 
 ### Columns
-To add filter values to column 2, and let grid fill in values for filter of column 3, use:
+Columns definition is an array of objects defining column appereance and functions.
+<table><thead><tr><th>Name</th><th>Description</th><th>Default</th></tr></thead><tbody>
+<tr><td>name</td><td>field name in data record</td><td></td></tr>
+<tr><td>filter</td><td>list of values for filter select, or a null to automatically build the list from table data</td><td></td></tr>
+<tr><td>value</td><td>function which returns cell content</td><td>function(item){}</td></tr>
+<tr><td>editable</td><td>boolean if edit is allowed, or a function(item,col) which return boolean</td><td></td></tr>
+<tr><td>type</td><td>input type for cell editor</td><td></td></tr>
+<tr><td>listOfValues</td><td>array of selectable values when editing</td><td></td></tr>
+</tbody></table>
+
+To add filter values to column 5, and let grid fill in values for filter of column 3, use:
 
     var t1=FathGrid("table1",{
       size:10,
       editable:true,
       filterable:true,
       sortable:true,
-      columns:{
-        1:{editable:false},
-        2:{
+      columns:[
+        {editable:false},
+        {
           listOfValues:[1,2,3,4,5,"Abel","SomeName"], //list of values for edit, or a function(data,col) which returns list of values
         },
-        3:{
+        {
           filter:null, //array or null for auto-generation of filter list
           editable:function(data,col,el){return data.rownum>3}, //is field editable
         },
-        4:{
+        {
           type:'email', //edit input type: text, date, email, checkbox
         },
-        5:{type:'checkbox',
+        {type:'checkbox',
           editable:true,
           filter:[{name:'no',value:0},{name:'yes',value:1}]
         },
-
-      },
+      ],
     });
 
 # Export
