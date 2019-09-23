@@ -741,7 +741,7 @@
       editable:true,
       filterable:true,
       sortable:true,
-      onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value)},
+      onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
       rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
       columns:[
         {editable:false},
@@ -750,7 +750,7 @@
         },
         {
           filter:null,//array or null for auto-generation of filter list
-          editable:function(data,col,el){return data.id>3}, //is field editable
+          //editable:function(data,col,el){return data.id>3}, //is field editable
         },
         {
           type:'email', //edit input type: text, date, email, checkbox

@@ -17,9 +17,10 @@ style.innerHTML = `
     z-index: 1;
   }
   
-  .dropdown:hover .dropdown-content {    display: block;  }  
-  .dropdown:hover .dropdown-content a {display:block;padding:0.1em 2em;margin:2px 0;}
-  .dropdown:hover .dropdown-content a:hover {background-color:#eee;}
+  .fathgrid-wrapper .dropdown:hover .dropdown-content {    display: block;  }  
+  .fathgrid-wrapper .dropdown:hover .dropdown-content a {display:block;padding:0.1em 2em;margin:2px 0;}
+  .fathgrid-wrapper .dropdown:hover .dropdown-content a:hover {background-color:#eee;}
+  .fathgrid-wrapper .error {border-color:red;}
 `;
 document.head.appendChild(style);
 ((function(win){
@@ -71,12 +72,19 @@ document.head.appendChild(style);
       return null;
     };
 
+    var vv=function(item,idx){
+      return config.columns[idx].name!==undefined?(item[config.columns[idx].name]):(item[idx]);
+    };
+    var ss=function(item,idx,v){
+      if(config.columns[idx].name!==undefined)(item[config.columns[idx].name]=v); else (item[idx]=v);
+    };
+
     var sort=function(i,desc){
       var isSorted=thead.querySelector("th:nth-child("+(i)+")").classList.contains("sorted");
-
+      var i1=i+1;
       data.sort((a,b)=>{
-        a=('number'==typeof a[i-1])?(a[i-1]):a[i-1].replace(/(<([^>]+)>)/gi,"");
-        b=('number'==typeof b[i-1])?(b[i-1]):b[i-1].replace(/(<([^>]+)>)/gi,"");
+        a=('number'==typeof vv(a,i1))?(vv(a,i1)):vv(a,i1).replace(/(<([^>]+)>)/gi,"");
+        b=('number'==typeof vv(b,i1))?(vv(b,i1)):vv(b,i1).replace(/(<([^>]+)>)/gi,"");
         return ((isSorted || (desc===true))?-1:1)*(isNaN(parseFloat(a))? ( (a<b?-1:(a>b)?1:0) ) :(a-b));
       });
 
@@ -157,8 +165,8 @@ document.head.appendChild(style);
               }
               else if(i.type==='checkbox') {if(i.checked && !isChecked(x[i.dataset.i])) ok=false;}
               else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!='' && !(x[i.dataset.i]==i.value)) ok=false;}
-              else if(i.value!='' && (typeof x[i.dataset.i] =='number') && x[i.dataset.i]!=(i.value)) ok=false;
-              else if(i.value!='' && (typeof x[i.dataset.i] =='string')&& !x[i.dataset.i].includes(i.value)) ok=false;
+              else if(i.value!='' && (typeof vv(x,i.dataset.i) =='number') && vv(x,i.dataset.i)!=(i.value)) ok=false;
+              else if(i.value!='' && (typeof vv(x,i.dataset.i) =='string')&& !vv(x,i.dataset.i).includes(i.value)) ok=false;
             });
             return ok;
         });
@@ -170,7 +178,7 @@ document.head.appendChild(style);
             
             config.columns.forEach((column,col)=>{
               var c=document.createElement('td');
-              var x=column.name!==undefined?dr[column.name]:dr[col];
+              var x=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[col]);
               if(column.type=='checkbox') {
                 c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((column.editable===false ||(typeof column.editable =='function' && column.editable(dr,col+1)===false)) || config.editable==false)?'disabled':''} />`;
                 c.querySelector(":scope input[type=checkbox]").addEventListener("click",function(e){
@@ -196,7 +204,17 @@ document.head.appendChild(style);
     var editCell=function(rownum,col,el){
       if(!config.editable) return;
       if(editinput!==undefined) {
-        editinput.parentNode.innerText=editinput.value!=''?editinput.value:editinput.dataset.originalvalue;
+        var newval=editinput.value;//editinput.value!=''?editinput.value:editinput.dataset.originalvalue;
+        
+        var old=vv(data[editinput.dataset.rownum-1],editinput.dataset.col-1);
+        ss(data[editinput.dataset.rownum-1],editinput.dataset.col-1,newval);
+        if(false!==config.onChange(data[editinput.dataset.rownum-1],editinput.dataset.col,old,newval)){
+          editinput.remove();editinput=undefined;render();return;
+        }else {
+          ss(data[editinput.dataset.rownum-1],editinput.dataset.col-1,old);
+          editinput.classList.add("error");
+          return;//reject edit
+        }
         editinput.remove();
         editinput=undefined;
       }
@@ -211,8 +229,8 @@ document.head.appendChild(style);
         el.innerHTML=`<select style="width:100%;" class="form-control" id="coledit" name="col" ></select>`;
         i=el.querySelector(":scope #coledit");
         var lov=column.listOfValues;if(typeof lov=="function") lov=lov(data[rownum-1],col,el);
-        lov.forEach(v=>{var o=document.createElement("OPTION");o.innerText=v;o.value=v;i.add(o);});
-        i.value=t;
+
+        lov.forEach(v=>{var o=document.createElement("OPTION");o.innerText=(undefined===v.name)?v:v.name;o.value=(undefined==v.value)?v:v.value;if(o.value==vv(data[rownum-1],col-1))o.setAttribute("selected","selected");i.add(o);});
         i.focus();
         i.addEventListener("change",function(e){config.onChange(data[rownum-1],col,data[rownum-1][col-1],e.srcElement.value);});
       }
@@ -224,29 +242,44 @@ document.head.appendChild(style);
         i.select();
       }
       i.addEventListener("click",function(ev){ev.stopPropagation();});
-      i.dataset.originalvalue=t;
+      i.dataset.originalvalue=t;i.dataset.rownum=rownum;i.dataset.col=col;
 
       i.addEventListener("keydown",function(e){
         if(undefined===rownum) return;
-        if(13==e.which || 9==e.which) {
-          var old=data[rownum-1][col-1];
-          data[rownum-1][col-1]=e.srcElement.value;
-          config.onChange(data[rownum-1],col,old,e.srcElement.value);
-          render();
-        }
-        
+
         switch(e.which){
-          
           case 27://esc
             render();
             break;
           case 38://up
+            if([...el.parentElement.parentElement.children].indexOf(el.parentElement) > 0) {
+              stop(e);
+              editCell(rownum-1,col,el.parentElement.previousSibling.querySelector("td:nth-child("+col+")"));
+            }
             break;
           case 40://down
+            if(el.parentElement.nextSibling!==null) {
+              stop(e);
+              editCell(rownum+1,col,el.parentElement.nextSibling.querySelector("td:nth-child("+col+")"));
+            }
             break;
           case 37://left
+            if(e.shiftKey && [...el.parentElement.children].indexOf(el) > 0) {
+              stop(e);
+              editCell(rownum,col-1,el.previousSibling);
+            }
+            break;
+          case 13: case 9:
+            if(el.nextSibling!==null) {
+              stop(e);
+              editCell(rownum,col+1,el.nextSibling);
+            }
             break;
           case 39://right
+            if(e.shiftKey && el.nextSibling!==null) {
+              stop(e);
+              editCell(rownum,col+1,el.nextSibling);
+            }
             break;
         }
       });
