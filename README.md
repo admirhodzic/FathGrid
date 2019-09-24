@@ -1,5 +1,5 @@
 # FathGrid
-No dependencies vanilla JavaScript data table/grid with paging, sorting, filtering, export and editing.
+No dependencies pure JavaScript data table/grid with instant search, paging, sorting (by multiple columns), filtering, export and editing.
 
 ![Sample screenshot](/fathgrid.png)
 
@@ -73,7 +73,10 @@ Table content can be set using array of JSON objects. In that case, columns defi
                 value:function(item){return users.find(i=>i.value==item.userId).name;}
               },
               {name:'title'},
-              {name:'body'},
+              {
+                name:'body',
+                html:function(item){return `<b>${item.body}</b>`}
+              },
           ],
           data:json,
         });
@@ -90,7 +93,7 @@ Table content can be set using array of JSON objects. In that case, columns defi
 <tr><td>page</td><td>page number to show</td><td>1</td></tr>
 <tr><td>filterable</td><td>show filter row in thead</td><td>true</td></tr>
 <tr><td>editable</td><td>allow edits</td><td>true</td></tr>
-<tr><td>sortable</td><td>allow sorting</td><td>true</td></tr>
+<tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
 <tr><td>data</td><td>table data</td><td>data from HTML table content</td></tr>
 <tr><td>rowClass</td><td>function to return a string with row classes. Use it to change row appearance based on some criteria.</td><td>function(data,index){}</td></tr>
@@ -103,7 +106,8 @@ Columns definition is an array of objects defining column appereance and functio
 <table><thead><tr><th>Name</th><th>Description</th><th>Default</th></tr></thead><tbody>
 <tr><td>name</td><td>field name in data record</td><td></td></tr>
 <tr><td>filter</td><td>list of values for filter select, or a null to automatically build the list from table data</td><td></td></tr>
-<tr><td>value</td><td>function which returns cell content</td><td>function(item){}</td></tr>
+<tr><td>value</td><td>function which returns cell text content</td><td>function(item){}</td></tr>
+<tr><td>html</td><td>function which returns cell HTML content</td><td>function(item){}</td></tr>
 <tr><td>editable</td><td>boolean if edit is allowed, or a function(item,col) which return boolean</td><td></td></tr>
 <tr><td>type</td><td>input type for cell editor</td><td></td></tr>
 <tr><td>listOfValues</td><td>array of selectable values when editing</td><td></td></tr>
@@ -148,9 +152,11 @@ To enable PDF export, include jsPDF.js in your page and PDF export functionality
   
   .render() //redraw
   
-  .sort(column_index, [asc|desc]) //sort data
+  .sort(column_index [, asc|desc][, multisort] ) //sort data, set multisort to sort by multiple columns
   
-  .getSort() //returns 1-based column index, negative if using descending sort order
+  .getSort() //returns array of 1-based column indices, negative if using descending sort order
+
+  .setSort(indices) // eg. .setSort([2,1]) to sort by second then first column
   
   .filter(column_index, query) //add filter string to a column
   

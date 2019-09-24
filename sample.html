@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>FathGrid sample!</title>
+    <title>FathGrid demo!</title>
     
     <!-- add jsPdf to enable PDF export -->
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
@@ -18,7 +18,9 @@
   </head>
   <body>
       <div class="container-fluid">
-    <h1>FathGrid sample!</h1>
+    <h1>FathGrid with inline data</h1>
+
+    Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select>
     <table  id="table1" class="table table-hover table-bordered ">
       <thead class="thead-light">
         <tr>
@@ -754,6 +756,7 @@
         },
         {
           type:'email', //edit input type: text, date, email, checkbox
+          html:function(item){return `<b>${item[3]}</b>`}
         },
         {type:'checkbox',editable:true,
           filter:[{name:'no',value:0},{name:'yes',value:1}]
