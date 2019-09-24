@@ -40,6 +40,7 @@ document.head.appendChild(style);
         rowClass:null,
         data:null,
         editinput:undefined,
+        q:'',
         ..._config
     };
     var data=config.data===null?[]:config.data;
@@ -174,6 +175,9 @@ document.head.appendChild(style);
               else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!='' && !(x[i.dataset.i]==i.value)) ok=false;}
               else if(i.value!='' && (typeof vv(x,i.dataset.i) =='number') && vv(x,i.dataset.i)!=(i.value)) ok=false;
               else if(i.value!='' && (typeof vv(x,i.dataset.i) =='string')&& !vv(x,i.dataset.i).includes(i.value)) ok=false;
+              if(ok && config.q!=''){
+                ok = (config.columns.find((f,ci)=>(typeof vv(x,ci) == 'number'?vv(x,ci)==config.q:(vv(x,ci).includes(config.q))))!==undefined);
+              }
             });
             return ok;
         });
@@ -220,7 +224,8 @@ document.head.appendChild(style);
         if(false!==config.onChange(data[editinput.dataset.rownum-1],editinput.dataset.col,old,newval)){
           var td=editinput.parentElement,dr=data[editinput.dataset.rownum-1],cr=editinput.dataset.col-1,column=config.columns[cr];
           editinput.remove();editinput=undefined;
-          td.innerText=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[cr]);
+          if(column.html!==undefined) td.innerHTML=column.html(dr);
+          else td.innerText=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[cr]);
         }else {
           ss(editinput.dataset.rownum-1,editinput.dataset.col-1,old);
           editinput.classList.add("error");
@@ -381,7 +386,7 @@ document.head.appendChild(style);
       setData:function(newdata){data=[];newdata.map(x=>data.push(x));render();},
       getExportData:getExportData,
       export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt=='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
-      search:function(q){config.q=q;render();}
+      search:function(q){if(q===undefined) return config.q; config.q=q;render();}
     }
   }
 })(typeof window !== "undefined" ? window : this));

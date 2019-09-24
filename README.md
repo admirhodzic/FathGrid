@@ -1,5 +1,12 @@
 # FathGrid
-No dependencies pure JavaScript data table/grid with instant search, paging, sorting (by multiple columns), filtering, export and editing.
+No dependencies pure JavaScript data table/grid with:
+- instant search, 
+- paging, 
+- sorting (by multiple columns), 
+- filtering, 
+- export,
+- custom row highlights,
+- edit mode.
 
 ![Sample screenshot](/fathgrid.png)
 
@@ -163,6 +170,8 @@ To enable PDF export, include jsPDF.js in your page and PDF export functionality
   .getFilter() //returns array of column query strings
   
   .editCell(rownum, col) //start editor in the cell
+
+  .search([query string]) //instant serach by all columns. calling this method without argument returns current search string.
 
   
  

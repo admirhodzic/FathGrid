@@ -20,7 +20,20 @@
       <div class="container-fluid">
     <h1>FathGrid with inline data</h1>
 
-    Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select>
+    <div style="display: flex;">
+      <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
+      <div style="flex-grow: 1">
+        
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Search</span>
+          </div>
+          <input onchange="t1.search(this.value)" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+        </div>        
+      </div>
+    </div>
+
+    
     <table  id="table1" class="table table-hover table-bordered ">
       <thead class="thead-light">
         <tr>
@@ -746,7 +759,10 @@
       onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
       rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
       columns:[
-        {editable:false},
+        {
+          editable:false,
+          html:function(item){return `<img src="http://picsum.photos/32?${item.id}"/> <b>${item[0]}</b>`}
+        },
         {
           listOfValues:[1,2,3,4,5,"Abel","Ahmed"],//list of values for edit, or a function(data,col) which returns list of values
         },
@@ -756,7 +772,6 @@
         },
         {
           type:'email', //edit input type: text, date, email, checkbox
-          html:function(item){return `<b>${item[3]}</b>`}
         },
         {type:'checkbox',editable:true,
           filter:[{name:'no',value:0},{name:'yes',value:1}]
