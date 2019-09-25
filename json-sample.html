@@ -19,22 +19,25 @@
   <body>
       <div class="container-fluid">
     <h1>FathGrid with json data</h1>
-    <table  id="table1" class="table table-hover table-bordered ">
-      <thead class="thead-light">
-        <tr>
-          <th>ID</th>
-          <th>User ID</th>
-          <th>Title</th>
-          <th>Body</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-        </table>
+
+    <div style="display: flex;">
+      <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
+      <div style="flex-grow: 1">
+        
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Search</span>
+          </div>
+          <input onchange="t1.search(this.value)" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+        </div>        
+      </div>
+    </div>
+
+    <table  id="table1" class="table table-hover table-bordered ">       <thead class="thead-light"></thead> </table>
   </div>
   
     <script>
-        var users=[];
+        var t1,users=[];
 fetch('https://jsonplaceholder.typicode.com/users')
   .then(response => response.json())
   .then(json => {
@@ -44,20 +47,21 @@ fetch('https://jsonplaceholder.typicode.com/users')
       .then(response => response.json())
       .then(json => {
 
-        var t1=FathGrid("table1",{
+        t1=FathGrid("table1",{
           size:12,
           editable:true,
           onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
           columns:[
-              {editable:false, name:'id'},
+              {editable:false, name:'id',header:"ID"},
               {
                 name:'userId', 
                 filter:users,
                 listOfValues:users,
-                value:function(item){return users.find(i=>i.value==item.userId).name;}
+                value:function(item){return users.find(i=>i.value==item.userId).name;},
+                header:'User'
               },
-              {name:'title'},
-              {name:'body'},
+              {name:'title',header:'Title'},
+              {name:'body',header:'Text',type:'textarea'},
           ],
           data:json,
         });

@@ -32,6 +32,7 @@ document.head.appendChild(style);
         editable:false,
         filterable:true,
         sortable:true,
+        showFooter:false,
         sort:[],
         columns:[],
         onRender:function(){},
@@ -45,9 +46,16 @@ document.head.appendChild(style);
     };
     var data=config.data===null?[]:config.data;
     var fdata=data;//filtered data
-    var table=document.getElementById(id);
-    var thead=table.querySelector(":scope thead");
-    var tbody=table.querySelector(":scope tbody");
+    var table=document.getElementById(id)||document.body.appendChild(table=document.createElement("TABLE"));
+    var tbody=table.querySelector(":scope tbody") || table.appendChild(tbody=document.createElement("TBODY"));
+    var thead=table.querySelector(":scope thead") || table.insertBefore(thead=document.createElement("THEAD"),tbody);
+    
+    if(thead.querySelectorAll(":scope th").length===0) {
+      var tr=document.createElement("TR");
+      thead.appendChild(tr);
+      config.columns.forEach((c,i)=>{tr.appendChild(document.createElement("TH"))});
+    }
+    
     var editinput=undefined;
 
     var renderPaginator=function(){
@@ -65,6 +73,7 @@ document.head.appendChild(style);
     var prevPage=function(){config.page=Math.max(1, config.page-1);render();};
     var lastPage=function(){config.page=Math.floor((fdata.length+config.size-1)/config.size);render();};
     var firstPage=function(){config.page=1;render();};
+    function clearSelection(){if (window.getSelection) {if (window.getSelection().empty) { window.getSelection().empty();} else if (window.getSelection().removeAllRanges) {  window.getSelection().removeAllRanges();}} else if (document.selection) {  document.selection.empty();}}
     
     var getSort=function(){      return config.sort;    };
 
@@ -126,9 +135,9 @@ document.head.appendChild(style);
     }
     data=data.map((x,idx)=>{x.rownum=idx+1;return x;});//add rownum prop
 
-    thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={}});
+    thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={};if(undefined!==config.columns[i].header) th.innerText=config.columns[i].header});
 
-    if(config.sortable) thead.querySelectorAll("tr th").forEach((th,i) => {th.style.cursor="pointer";th.addEventListener('click',function(e){sort(i+1,undefined,e.shiftKey);stop(e);});});
+    if(config.sortable) thead.querySelectorAll("tr th").forEach((th,i) => {th.style.cursor="pointer";th.addEventListener('click',function(e){sort(i+1,undefined,e.shiftKey);stop(e);clearSelection()});});
 
     if(config.filterable){
         var r=document.createElement("TR");r.classList.add("filter");
@@ -149,11 +158,19 @@ document.head.appendChild(style);
           i.style.width="100%";
 
           i.dataset.i=idx;
-          i.type
           f.append(i);r.append(f);
         });
         thead.append(r);
         r.querySelectorAll(":scope input, select").forEach(i=>{i.addEventListener("change",function(e){render();});});
+    }
+
+    var tfoot=table.querySelector("TFOOT");
+    if(config.showFooter){
+      if(tfoot===null) {
+        tfoot=document.createElement("TFOOT");
+        config.columns.forEach((c,idx)=>{var td=this.document.createElement("TH");td.dataset.i=idx;tfoot.appendChild(td);});
+        table.appendChild(tfoot);
+      }
     }
 
     var stop=function(e){e.preventDefault();e.stopPropagation();};
@@ -181,6 +198,8 @@ document.head.appendChild(style);
             });
             return ok;
         });
+        if((config.page-1)*config.size >= fdata.length) config.page=1;
+
         fdata.slice((config.page-1)*config.size,config.page*config.size).forEach((dr,idx)=>{
             var r=document.createElement("tr");
             r.dataset.id=dr.id;
@@ -200,7 +219,7 @@ document.head.appendChild(style);
               else c.innerText=x;
               r.appendChild(c);
             })
-            table.querySelector("tbody").appendChild(r);
+            tbody.appendChild(r);
         });
 
         paginator.innerHTML=renderPaginator();
@@ -211,6 +230,10 @@ document.head.appendChild(style);
         paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){config.page=Math.max(1,Math.min(fdata.length/config.page,parseInt(prompt("Go to page number",config.page)||0)));render();stop(e);})});
 
         tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){config.onClick(data[e.srcElement.parentNode.dataset.rownum-1],[...e.srcElement.parentNode.children].indexOf(e.srcElement)+1,e.srcElement);})});
+
+        if(tfoot!==null){
+          tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(data,td):config.columns[idx].footer});
+        }
         config.onRender();            
     };
     var editCell=function(rownum,col,el){
@@ -219,6 +242,8 @@ document.head.appendChild(style);
       if(editinput!==undefined) {
         var newval=editinput.value;//editinput.value!=''?editinput.value:editinput.dataset.originalvalue;
         
+        if(!editinput.checkValidity()) return editinput.classList.add("error");
+
         var old=vv(data[editinput.dataset.rownum-1],editinput.dataset.col-1);
         ss(editinput.dataset.rownum-1,editinput.dataset.col-1,newval);
         if(false!==config.onChange(data[editinput.dataset.rownum-1],editinput.dataset.col,old,newval)){
@@ -240,7 +265,7 @@ document.head.appendChild(style);
       var t=el.innerText;
       var i=null;
       if(undefined!==column && column.listOfValues!==undefined){
-        el.innerHTML=`<select style="width:100%;" class="form-control" id="coledit" name="col" ></select>`;
+        el.innerHTML=`<select style="width:100%;" class="form-control" id="coledit"  ></select>`;
         i=el.querySelector(":scope #coledit");
         var lov=column.listOfValues;if(typeof lov=="function") lov=lov(data[rownum-1],col,el);
 
@@ -249,7 +274,8 @@ document.head.appendChild(style);
         i.addEventListener("change",function(e){config.onChange(data[rownum-1],col,data[rownum-1][col-1],e.srcElement.value);});
       }
       else {
-        el.innerHTML=`<input type="${coltype}" style="width:100%;" class="form-control" id="coledit" name="col" value=""/>`;
+        
+        el.innerHTML=column.type=='textarea'?(`<textarea id="coledit" style="width:${el.clientWidth}px;height:${el.clientHeight}px" class="form-control"></textarea>`):`<input type="${coltype}" ${column.title!==undefined?`title="${column.title}"`:''} ${column.pattern!==undefined?`pattern="${column.pattern}"`:''} style="width:100%;" class="form-control" id="coledit" value=""/>`;
         i=el.querySelector(":scope #coledit");
         i.value=t;
         i.focus();

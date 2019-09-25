@@ -102,6 +102,7 @@ Table content can be set using array of JSON objects. In that case, columns defi
 <tr><td>editable</td><td>allow edits</td><td>true</td></tr>
 <tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
+<tr><td>showFooter</td><td>add footer row to table</td><td>false</td></tr>
 <tr><td>data</td><td>table data</td><td>data from HTML table content</td></tr>
 <tr><td>rowClass</td><td>function to return a string with row classes. Use it to change row appearance based on some criteria.</td><td>function(data,index){}</td></tr>
 <tr><td>onChange</td><td>function to call when cell data is changed</td><td>function(data, col, old_value, new_value){}</td></tr>
@@ -115,8 +116,12 @@ Columns definition is an array of objects defining column appereance and functio
 <tr><td>filter</td><td>list of values for filter select, or a null to automatically build the list from table data</td><td></td></tr>
 <tr><td>value</td><td>function which returns cell text content</td><td>function(item){}</td></tr>
 <tr><td>html</td><td>function which returns cell HTML content</td><td>function(item){}</td></tr>
+<tr><td>header</td><td>header text</td><td></td></tr>
+<tr><td>footer</td><td>function which returns footer cell HTML content</td><td>function(data,element){}</td></tr>
 <tr><td>editable</td><td>boolean if edit is allowed, or a function(item,col) which return boolean</td><td></td></tr>
-<tr><td>type</td><td>input type for cell editor</td><td></td></tr>
+<tr><td>type</td><td>input type for cell editor. supported values are: text, color, image, date, email, number, checkbox, textarea.</td><td></td></tr>
+<tr><td>pattern</td><td>regular expression to check the input value against when editing cell content</td><td></td></tr>
+<tr><td>title</td><td>help string for input in edit mode</td><td></td></tr>
 <tr><td>listOfValues</td><td>array of selectable values when editing</td><td></td></tr>
 </tbody></table>
 
@@ -128,7 +133,7 @@ To add filter values to column 5, and let grid fill in values for filter of colu
       filterable:true,
       sortable:true,
       columns:[
-        {editable:false},
+        {editable:false, header:'ID#'},
         {
           listOfValues:[1,2,3,4,5,"Abel","SomeName"], //list of values for edit, or a function(data,col) which returns list of values
         },
@@ -137,11 +142,15 @@ To add filter values to column 5, and let grid fill in values for filter of colu
           editable:function(data,col,el){return data.rownum>3}, //is field editable
         },
         {
-          type:'email', //edit input type: text, date, email, checkbox
+          type:'text', //edit input type: text, date, email, checkbox, textarea
+          pattern:'[0-9]*',
+          title:'only numbers, please!'
         },
         {type:'checkbox',
           editable:true,
-          filter:[{name:'no',value:0},{name:'yes',value:1}]
+          filter:[{name:'no',value:0},{name:'yes',value:1}],
+          footer:function(data,el){return data.map(x=>x.amount).reduce((x,s)=>x+s).toFixed(2);}, //display sum of field "amount"
+
         },
       ],
     });

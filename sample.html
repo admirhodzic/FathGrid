@@ -756,33 +756,29 @@
       editable:true,
       filterable:true,
       sortable:true,
+      showFooter:true,
       onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
       rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
       columns:[
         {
           editable:false,
-          html:function(item){return `<img src="http://picsum.photos/32?${item.id}"/> <b>${item[0]}</b>`}
+          html:function(item){return `<img src="http://picsum.photos/32?${item.id}"/> <b>${item[0]}</b>`},
+          header:'ID#',
         },
         {
-          listOfValues:[1,2,3,4,5,"Abel","Ahmed"],//list of values for edit, or a function(data,col) which returns list of values
+          listOfValues:["Abel","Ahmed"],//list of values for edit, or a function(data,col) which returns list of values
         },
         {
           filter:null,//array or null for auto-generation of filter list
           //editable:function(data,col,el){return data.id>3}, //is field editable
         },
         {
-          type:'email', //edit input type: text, date, email, checkbox
+          type:'text', //edit input type: text, date, email, checkbox
         },
         {type:'checkbox',editable:true,
           filter:[{name:'no',value:0},{name:'yes',value:1}]
         },
       ],
-      /*data:[
-        [10,"dfewsgv sdfdsgfsd","dvfdcvxcdA","3r2dfsdf@cxvfdcv.com",0],
-        [20,"dfewsgv sdfdsgfsd","dvfdcvxcdA","3r2dfsdf@cxvfdcv.com",0],
-        [30,"dfgserdgvs dfefew","cvfregrv","fggh@derew.com",1],
-        [40,"dsgfsreg dfsd","vsd f A","erew@dvvrfgsdfg.com",0]
-      ]*/
     });
     
     //t1.export("csv");
