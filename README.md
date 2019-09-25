@@ -10,6 +10,10 @@ No dependencies pure JavaScript data table/grid with:
 
 ![Sample screenshot](/fathgrid.png)
 
+
+![Demo](/sample.html)
+
+
 Just include .js file in your HTML and initialize table with:
 
     var t1=FathGrid("table1",{});
