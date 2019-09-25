@@ -3,22 +3,21 @@ No dependencies pure JavaScript data table/grid with:
 - instant search, 
 - paging, 
 - sorting (by multiple columns), 
-- filtering, 
-- export,
+- filtering (with text input or selecting from a list),
+- export to txt, csv, pdf, xls, etc.,
 - custom row highlights,
-- edit mode.
+- grouping on custom value,
+- data edit mode,
+- inline data, JSON fetching or server-side processing.
 
 ![Sample screenshot](/fathgrid.png)
-
-
-![Demo](/sample.html)
 
 
 Just include .js file in your HTML and initialize table with:
 
     var t1=FathGrid("table1",{});
 
-where "table1" is an ID of HTML table. Your table must have THEAD and TBODY tags like:
+where "table1" is an ID of HTML table. 
 
     <table id="table1">
         <thead>
@@ -184,7 +183,9 @@ To enable PDF export, include jsPDF.js in your page and PDF export functionality
   
   .editCell(rownum, col) //start editor in the cell
 
-  .search([query string]) //instant serach by all columns. calling this method without argument returns current search string.
+  .search([query string]) //instant search in all columns. Calling this method without argument returns current search string.
+
+  .getSelectedItem() //return data item of selected row or null if no row is selected
 
   
  

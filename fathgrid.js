@@ -36,7 +36,7 @@ document.head.appendChild(style);
         sort:[],
         columns:[],
         onRender:function(){},
-        onClick:function(data,col,el){console.log("onclick",data,data.rownum);editCell(data.rownum,col,el)},
+        onClick:function(data,col,el){editCell(data.rownum,col,el)},
         onChange:function(data,col,old,value){},
         rowClass:null,
         data:null,
@@ -44,6 +44,7 @@ document.head.appendChild(style);
         q:'',
         ..._config
     };
+    var selected_rownum=null;
     var data=config.data===null?[]:config.data;
     var fdata=data;//filtered data
     var table=document.getElementById(id)||document.body.appendChild(table=document.createElement("TABLE"));
@@ -229,7 +230,10 @@ document.head.appendChild(style);
         paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
         paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){config.page=Math.max(1,Math.min(fdata.length/config.page,parseInt(prompt("Go to page number",config.page)||0)));render();stop(e);})});
 
-        tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){config.onClick(data[e.srcElement.parentNode.dataset.rownum-1],[...e.srcElement.parentNode.children].indexOf(e.srcElement)+1,e.srcElement);})});
+        tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
+          selected_rownum=e.srcElement.parentNode.dataset.rownum;
+          config.onClick(data[selected_rownum-1],[...e.srcElement.parentNode.children].indexOf(e.srcElement)+1,e.srcElement);
+        })});
 
         if(tfoot!==null){
           tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(data,td):config.columns[idx].footer});
@@ -412,7 +416,8 @@ document.head.appendChild(style);
       setData:function(newdata){data=[];newdata.map(x=>data.push(x));render();},
       getExportData:getExportData,
       export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt=='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
-      search:function(q){if(q===undefined) return config.q; config.q=q;render();}
+      search:function(q){if(q===undefined) return config.q; config.q=q;render();},
+      getSelectedItem:function(){return selected_rownum?data[selected_rownum-1]:null;}
     }
   }
 })(typeof window !== "undefined" ? window : this));
