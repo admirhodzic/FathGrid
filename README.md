@@ -6,8 +6,8 @@ No dependencies pure JavaScript data table/grid with:
 - filtering (with text input or selecting from a list),
 - export to txt, csv, pdf, xls, etc.,
 - custom row highlights,
-- grouping on custom value,
-- data edit mode,
+- grouping (with group header/footer),
+- in-place data edit mode,
 - inline data, JSON fetching or server-side processing.
 
 ![Sample screenshot](/fathgrid.png)
@@ -20,12 +20,7 @@ Just include .js file in your HTML and initialize table with:
 where "table1" is an ID of HTML table. 
 
     <table id="table1">
-        <thead>
-            <tr><th>header</th></tr>
-        </thead>
-        <tbody>
-            <tr><td>value1</td></tr>
-        </tbody>
+    ...
     </table>
 
 # Table Data
@@ -94,8 +89,6 @@ Table content can be set using array of JSON objects. In that case, columns defi
 
 
 
-
-
 ## Configuration options
 <table><thead><tr><th>Name</th><th>Description</th><th>Default</th></tr></thead>
 <tbody>
@@ -104,7 +97,6 @@ Table content can be set using array of JSON objects. In that case, columns defi
 <tr><td>filterable</td><td>show filter row in thead</td><td>true</td></tr>
 <tr><td>editable</td><td>allow edits</td><td>true</td></tr>
 <tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
-<tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
 <tr><td>showFooter</td><td>add footer row to table</td><td>false</td></tr>
 <tr><td>showGroupFooter</td><td>add footer row after each group of records</td><td>false</td></tr>
 <tr><td>data</td><td>table data</td><td>data from HTML table content</td></tr>
@@ -112,6 +104,7 @@ Table content can be set using array of JSON objects. In that case, columns defi
 <tr><td>onChange</td><td>function to call when cell data is changed</td><td>function(data, col, old_value, new_value){}</td></tr>
 <tr><td>groupOn</td><td>function which returns a HTML string to group records on</td><td>{}</td></tr>
 <tr><td>sortBy</td><td>Array or column indices to sort always. Usable for grouping records.</td><td>{}</td></tr>
+<tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
 </tbody>
 </table>
 
