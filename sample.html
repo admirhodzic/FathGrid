@@ -55,18 +55,17 @@
       rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
       
       //grouping
-      sortBy:[1],
-      groupOn:item=>`${item.country}`,
+      sortBy:[1],//group on first column
+      groupOn:item=>`${item.country}`, //group expression
       showGroupFooter:true,
 
       columns:[
-        {name:'country',header:'Country',visible:false},
+        {name:'country',header:'Country',visible:false}, //invisible grouping column
         {
           header:'ID',name:'id',
           editable:false,
           groupFooter:'Country Total',
           footer:'Total'
-
         },
         {
           header:'Name',name:'name',
@@ -83,8 +82,8 @@
         },
         {type:'text',editable:true,
           name:'salary',header:'Salary',
-          footer:function(data){return '$'+(data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))},
-          groupFooter:function(data){return '$'+(data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))}
+          footer:function(data){return (data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))},
+          groupFooter:function(data){return (data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))}
         },
         {name:'gender',filter:['Female','Male'],header:'Gender',listOfValues:['Female','Male']},
         {name:'active',type:'checkbox',header:'Active',filter:[{value:0,name:'No'},{value:1,name:'Yes'}]},
