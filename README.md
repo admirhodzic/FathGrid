@@ -106,9 +106,12 @@ Table content can be set using array of JSON objects. In that case, columns defi
 <tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
 <tr><td>showFooter</td><td>add footer row to table</td><td>false</td></tr>
+<tr><td>showGroupFooter</td><td>add footer row after each group of records</td><td>false</td></tr>
 <tr><td>data</td><td>table data</td><td>data from HTML table content</td></tr>
 <tr><td>rowClass</td><td>function to return a string with row classes. Use it to change row appearance based on some criteria.</td><td>function(data,index){}</td></tr>
 <tr><td>onChange</td><td>function to call when cell data is changed</td><td>function(data, col, old_value, new_value){}</td></tr>
+<tr><td>groupOn</td><td>function which returns a HTML string to group records on</td><td>{}</td></tr>
+<tr><td>sortBy</td><td>Array or column indices to sort always. Usable for grouping records.</td><td>{}</td></tr>
 </tbody>
 </table>
 
@@ -116,11 +119,13 @@ Table content can be set using array of JSON objects. In that case, columns defi
 Columns definition is an array of objects defining column appereance and functions.
 <table><thead><tr><th>Name</th><th>Description</th><th>Default</th></tr></thead><tbody>
 <tr><td>name</td><td>field name in data record</td><td></td></tr>
+<tr><td>visible</td><td>boolean. if set to false, column is not visible </td><td></td></tr>
 <tr><td>filter</td><td>list of values for filter select, or a null to automatically build the list from table data</td><td></td></tr>
 <tr><td>value</td><td>function which returns cell text content</td><td>function(item){}</td></tr>
 <tr><td>html</td><td>function which returns cell HTML content</td><td>function(item){}</td></tr>
 <tr><td>header</td><td>header text</td><td></td></tr>
 <tr><td>footer</td><td>function which returns footer cell HTML content</td><td>function(data,element){}</td></tr>
+<tr><td>groupFooter</td><td>function which returns group footer cell HTML content</td><td>function(data,element){}</td></tr>
 <tr><td>editable</td><td>boolean if edit is allowed, or a function(item,col) which return boolean</td><td></td></tr>
 <tr><td>type</td><td>input type for cell editor. supported values are: text, color, image, date, email, number, checkbox, textarea.</td><td></td></tr>
 <tr><td>pattern</td><td>regular expression to check the input value against when editing cell content</td><td></td></tr>

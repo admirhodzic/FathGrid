@@ -51,12 +51,22 @@
       filterable:true,
       sortable:true,
       showFooter:true,
-      onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
+      onChange:function(item,col,old,value){console.log("onChange:",item.id,col,old,value);return value==''?false:true;},
       rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
+      
+      //grouping
+      sortBy:[1],
+      groupOn:item=>`${item.country}`,
+      showGroupFooter:true,
+
       columns:[
+        {name:'country',header:'Country',visible:false},
         {
           header:'ID',name:'id',
           editable:false,
+          groupFooter:'Country Total',
+          footer:'Total'
+
         },
         {
           header:'Name',name:'name',
@@ -73,16 +83,15 @@
         },
         {type:'text',editable:true,
           name:'salary',header:'Salary',
-          footer:function(data){return '$'+(data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))}
+          footer:function(data){return '$'+(data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))},
+          groupFooter:function(data){return '$'+(data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))}
         },
         {name:'gender',filter:['Female','Male'],header:'Gender',listOfValues:['Female','Male']},
         {name:'active',type:'checkbox',header:'Active',filter:[{value:0,name:'No'},{value:1,name:'Yes'}]},
-        {filterable:false,name:'photo',html:function(item){return `<img style="width:32px;" src="${item.photo}"/>`},header:'Img'},
+        {filterable:false,name:'photo',html:function(item){return `<img  src="${item.photo}"/>`},header:'Img'},
       ],
       data:demodata
     });
-    
-    //t1.export("csv");
     
     </script>
 

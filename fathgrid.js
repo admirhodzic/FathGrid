@@ -33,6 +33,7 @@ document.head.appendChild(style);
         filterable:true,
         sortable:true,
         showFooter:false,
+        showGroupFooter:false,
         sort:[],
         columns:[],
         onRender:function(){},
@@ -61,7 +62,7 @@ document.head.appendChild(style);
     if(thead.querySelectorAll(":scope th").length===0) {
       var tr=document.createElement("TR");
       thead.appendChild(tr);
-      config.columns.forEach((c,i)=>{tr.appendChild(document.createElement("TH"))});
+      config.columns.forEach((c,i)=>{tr.appendChild(th=document.createElement("TH"));if(c.visible===false) th.style.display="none";});
     }
     
     var editinput=undefined;
@@ -92,33 +93,6 @@ document.head.appendChild(style);
       else data[rownum][idx]=v;
     };
 
-    var sort=function(i,desc,multisort){
-      var ss=config.sort;
-      config.sort=ss.map(x=>(x==i || x==-i)?-x:x);
-      if(!multisort) config.sort=[(desc===true || (ss.find(x=>x==i)!==undefined))?-i:i];
-
-      if((ss.find(x=>x==i||x==-i)===undefined)) if(multisort) config.sort.push((desc===true)?-i:i);
-
-      data.sort((a,b)=>{
-        for(var f=0;f<config.sort.length;f++){
-          var i1=Math.abs(config.sort[f])-1,ds=config.sort[f]<0;
-          a1=('number'==typeof vv2(a,i1))?(vv2(a,i1)):vv2(a,i1).replace(/(<([^>]+)>)/gi,"");
-          b1=('number'==typeof vv2(b,i1))?(vv2(b,i1)):vv2(b,i1).replace(/(<([^>]+)>)/gi,"");
-          if(a1!==b1) return (((ds===true))?-1:1)*(isNaN(parseFloat(a1))? ( (a1<b1?-1:(a1>b1)?1:0) ) :(a1-b1));
-        }
-        return 0;
-      });
-      data=data.map((x,idx)=>{x.rownum=idx+1;return x;});//add rownum prop
-
-      if(thead.querySelector("th.sorted")!==null) thead.querySelectorAll(":scope th.sorted").forEach(a=>a.classList.remove("sorted"));
-      if(thead.querySelector("th.sorted-desc")!==null) thead.querySelectorAll(":scope th.sorted-desc").forEach(a=>a.classList.remove("sorted-desc"));
-      config.sort.forEach(x=>{
-        thead.querySelector(":scope th:nth-child("+(Math.abs(x))+")").classList.add((x<0)?"sorted-desc":"sorted");
-      });
-      
-      render();
-    };
-
     var wrapper=this.document.createElement("DIV");wrapper.classList.add("fathgrid-wrapper");
     table.parentNode.insertBefore(wrapper,table);
     wrapper.appendChild(table);
@@ -143,6 +117,147 @@ document.head.appendChild(style);
     }
     data=data.map((x,idx)=>{x.rownum=idx+1;return x;});//add rownum prop
 
+    var tfoot=table.querySelector("TFOOT");
+    if(config.showFooter){
+      if(tfoot===null) {
+        tfoot=document.createElement("TFOOT");
+        config.columns.forEach((c,idx)=>{var td=this.document.createElement("TH");td.dataset.i=idx;tfoot.appendChild(td);if(c.visible===false) td.style.display='none';});
+        table.appendChild(tfoot);
+      }
+    }
+
+
+    var render=function(){
+        table.querySelectorAll(":scope tbody tr").forEach(tr => {tr.parentNode.removeChild(tr);});
+
+        fdata=data.filter(x=>{
+            var ok=true;
+
+            thead.querySelectorAll(":scope input, select").forEach((i)=>{
+              var opts=Array.from(i.querySelectorAll(":scope option:checked"),y=>y.value);
+              if(opts.filter(a=>a!='').length>1){
+                var ok2=false;
+                opts.forEach(y=>{if(y!='' && x[i.dataset.i].includes(y)) ok2=true;});
+                if(!ok2) ok=false;
+              }
+              else if(i.type==='checkbox') {if(i.checked && !isChecked(vv(x,i.dataset.i))) ok=false;}
+              else if(i.type==='color') {if(i.value!='#000000' && !(vv(x,i.dataset.i)==i.value)) ok=false;}
+              else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!='' && !(vv(x,i.dataset.i)==i.value)) ok=false;}
+              else if(i.value!='' && (typeof vv(x,i.dataset.i) =='number') && vv(x,i.dataset.i)!=(i.value)) ok=false;
+              else if(i.value!='' && (typeof vv(x,i.dataset.i) =='string')&& !vv(x,i.dataset.i).includes(i.value)) ok=false;
+              
+              if(ok && config.q!=''){
+                ok = (config.columns.find((f,ci)=>(typeof vv(x,ci) == 'number'?vv(x,ci)==config.q:(typeof vv(x,ci)=='string'?(vv(x,ci).includes(config.q)):(vv(x,ci)==config.q))))!==undefined);
+              }
+            });
+            return ok;
+        });
+        if((config.page-1)*config.size >= fdata.length) config.page=1;
+
+        var lastgroup=null,gg,gtr,gtd,groupdata=[];
+        fdata.slice((config.page-1)*config.size,config.page*config.size).forEach((dr,idx)=>{
+          
+            if(typeof config.groupOn==='function' && lastgroup!==(gg=config.groupOn(dr,idx))){
+              if(config.showGroupFooter===true && lastgroup!==null){
+                tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
+                config.columns.forEach((c,i)=>{
+                  gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
+                  gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
+                });
+              }
+              tbody.appendChild(gtr=document.createElement("TR"));gtr.appendChild(document.createElement("TD"));
+              gtr.classList.add("group-row");
+              gtr.querySelector(":scope TD").setAttribute("colspan",config.columns.filter(x=>x.visible!==false).length);
+              gtr.querySelector(":scope TD").innerHTML=`<b>${gg}</b>`;
+              lastgroup=gg;
+              groupdata=[];
+            }
+
+            var r=document.createElement("tr");
+            r.dataset.id=dr.id;
+            r.dataset.rownum=dr.rownum;
+            if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
+            
+            config.columns.forEach((column,col)=>{
+              var c=document.createElement('td');
+              if(column.visible===false) c.style.display="none";
+              var x=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[col]);
+              if(column.type=='checkbox') {
+                c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((column.editable===false ||(typeof column.editable =='function' && column.editable(dr,col+1)===false)) || config.editable==false)?'disabled':''} />`;
+                c.querySelector(":scope input[type=checkbox]").addEventListener("click",function(e){
+                  config.onChange(dr,col,!e.srcElement.checked,e.srcElement.checked);
+                });
+              }
+              else if(column.html!==undefined) c.innerHTML=column.html(dr);
+              else c.innerText=x;
+              r.appendChild(c);
+
+            })
+            tbody.appendChild(r);
+            if(undefined!==config.groupOn && config.showGroupFooter===true) groupdata.push(dr);
+        });
+        //copy of code from above to draw last group footer
+        
+        if(undefined!==config.groupOn && config.showGroupFooter===true){
+          tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
+          config.columns.forEach((c,i)=>{
+            gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
+            gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
+          });
+          groupdata=[];
+        }
+        
+
+
+        paginator.innerHTML=renderPaginator();
+        paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
+        paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
+        paginator.querySelectorAll(".lastpage").forEach(x=>{x.addEventListener('click',function(e){lastPage();stop(e);})});
+        paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
+        paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){config.page=Math.max(1,Math.min(fdata.length/config.page,parseInt(prompt("Go to page number",config.page)||0)));render();stop(e);})});
+
+        tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
+          selected_rownum=e.srcElement.parentElement.closest("TR").dataset.rownum;
+          config.onClick(data[selected_rownum-1],[...e.srcElement.parentElement.closest("TR").children].indexOf(e.srcElement.closest("TD"))+1,e.srcElement.closest("TD"));
+        })});
+
+        if(tfoot!==null){
+          tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(fdata,td):config.columns[idx].footer});
+        }
+        config.onRender();            
+    };
+    var sort=function(i,desc,multisort,wantRender){
+      var ss=config.sort;
+      config.sort=ss.map(x=>(x==i || x==-i)?-x:x);
+      if(!multisort) config.sort=[(desc===true || (ss.find(x=>x==i)!==undefined))?-i:i];
+
+      if((ss.find(x=>x==i||x==-i)===undefined)) if(multisort) config.sort.push((desc===true)?-i:i);
+
+      if(config.sortBy!==undefined) config.sort=[...(config.sortBy.filter(x=>!config.sort.includes(x))), ...config.sort];
+
+      data.sort((a,b)=>{
+        for(var f=0;f<config.sort.length;f++){
+          var i1=Math.abs(config.sort[f])-1,ds=config.sort[f]<0;
+          a1=('number'==typeof vv2(a,i1))?(vv2(a,i1)):vv2(a,i1).replace(/(<([^>]+)>)/gi,"");
+          b1=('number'==typeof vv2(b,i1))?(vv2(b,i1)):vv2(b,i1).replace(/(<([^>]+)>)/gi,"");
+          if(a1!==b1) return (((ds===true))?-1:1)*(isNaN(parseFloat(a1))? ( (a1<b1?-1:(a1>b1)?1:0) ) :(a1-b1));
+        }
+        return 0;
+      });
+      data=data.map((x,idx)=>{x.rownum=idx+1;return x;});//add rownum prop
+
+      if(thead.querySelector("th.sorted")!==null) thead.querySelectorAll(":scope th.sorted").forEach(a=>a.classList.remove("sorted"));
+      if(thead.querySelector("th.sorted-desc")!==null) thead.querySelectorAll(":scope th.sorted-desc").forEach(a=>a.classList.remove("sorted-desc"));
+      config.sort.forEach(x=>{
+        thead.querySelector(":scope th:nth-child("+(Math.abs(x))+")").classList.add((x<0)?"sorted-desc":"sorted");
+      });
+      
+      if(wantRender!==false) render();
+    };
+
+
+    if(config.sortBy!==this.undefined) {config.sortBy.map(c=>sort(c,false,true,false));}
+
     thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={};if(undefined!==config.columns[i].header) th.innerText=config.columns[i].header});
 
     if(config.sortable) thead.querySelectorAll("tr th").forEach((th,i) => {th.style.cursor="pointer";th.addEventListener('click',function(e){sort(i+1,undefined,e.shiftKey);stop(e);clearSelection()});});
@@ -165,6 +280,7 @@ document.head.appendChild(style);
             }
             i.classList.add("form-control");
             i.style.width="100%";
+            if(config.columns[idx].visible===false) f.style.display='none';
 
             i.dataset.i=idx;
             f.append(i);
@@ -175,83 +291,12 @@ document.head.appendChild(style);
         r.querySelectorAll(":scope input, select").forEach(i=>{i.addEventListener("change",function(e){render();});});
     }
 
-    var tfoot=table.querySelector("TFOOT");
-    if(config.showFooter){
-      if(tfoot===null) {
-        tfoot=document.createElement("TFOOT");
-        config.columns.forEach((c,idx)=>{var td=this.document.createElement("TH");td.dataset.i=idx;tfoot.appendChild(td);});
-        table.appendChild(tfoot);
-      }
-    }
 
     var stop=function(e){e.preventDefault();e.stopPropagation();};
     var isChecked=function(v){return v=='yes'||v=='true'||v===true||v=='on'||v==1||v=='1';};
-    var render=function(){
-        table.querySelectorAll(":scope tbody tr").forEach(tr => {tr.parentNode.removeChild(tr);});
 
-        fdata=data.filter(x=>{
-            var ok=true;
-
-            thead.querySelectorAll(":scope input, select").forEach((i)=>{
-              var opts=Array.from(i.querySelectorAll(":scope option:checked"),y=>y.value);
-              if(opts.filter(a=>a!='').length>1){
-                var ok2=false;
-                opts.forEach(y=>{if(y!='' && x[i.dataset.i].includes(y)) ok2=true;});
-                if(!ok2) ok=false;
-              }
-              else if(i.type==='checkbox') {if(i.checked && !isChecked(vv(x,i.dataset.i))) ok=false;}
-              else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!='' && !(vv(x,i.dataset.i)==i.value)) ok=false;}
-              else if(i.value!='' && (typeof vv(x,i.dataset.i) =='number') && vv(x,i.dataset.i)!=(i.value)) ok=false;
-              else if(i.value!='' && (typeof vv(x,i.dataset.i) =='string')&& !vv(x,i.dataset.i).includes(i.value)) ok=false;
-              
-              if(ok && config.q!=''){
-                ok = (config.columns.find((f,ci)=>(typeof vv(x,ci) == 'number'?vv(x,ci)==config.q:(vv(x,ci).includes(config.q))))!==undefined);
-              }
-            });
-            return ok;
-        });
-        if((config.page-1)*config.size >= fdata.length) config.page=1;
-
-        fdata.slice((config.page-1)*config.size,config.page*config.size).forEach((dr,idx)=>{
-            var r=document.createElement("tr");
-            r.dataset.id=dr.id;
-            r.dataset.rownum=dr.rownum;
-            if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
-            
-            config.columns.forEach((column,col)=>{
-              var c=document.createElement('td');
-              var x=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[col]);
-              if(column.type=='checkbox') {
-                c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((column.editable===false ||(typeof column.editable =='function' && column.editable(dr,col+1)===false)) || config.editable==false)?'disabled':''} />`;
-                c.querySelector(":scope input[type=checkbox]").addEventListener("click",function(e){
-                  config.onChange(dr,col,!e.srcElement.checked,e.srcElement.checked);
-                });
-              }
-              else if(column.html!==undefined) c.innerHTML=column.html(dr);
-              else c.innerText=x;
-              r.appendChild(c);
-            })
-            tbody.appendChild(r);
-        });
-
-        paginator.innerHTML=renderPaginator();
-        paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
-        paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
-        paginator.querySelectorAll(".lastpage").forEach(x=>{x.addEventListener('click',function(e){lastPage();stop(e);})});
-        paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
-        paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){config.page=Math.max(1,Math.min(fdata.length/config.page,parseInt(prompt("Go to page number",config.page)||0)));render();stop(e);})});
-
-        tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
-          selected_rownum=e.srcElement.parentNode.dataset.rownum;
-          config.onClick(data[selected_rownum-1],[...e.srcElement.parentNode.children].indexOf(e.srcElement)+1,e.srcElement);
-        })});
-
-        if(tfoot!==null){
-          tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(fdata,td):config.columns[idx].footer});
-        }
-        config.onRender();            
-    };
     var editCell=function(rownum,col,el){
+      console.log("edit",rownum,col,el);
       if(!config.editable) return;
 
       if(editinput!==undefined) {
@@ -304,7 +349,7 @@ document.head.appendChild(style);
 
         switch(e.which){
           case 27://esc
-            render();
+            editinput=undefined;render();
             break;
           case 38://up
             if([...el.parentElement.parentElement.children].indexOf(el.parentElement) > 0) {
