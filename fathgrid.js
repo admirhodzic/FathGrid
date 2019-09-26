@@ -46,6 +46,13 @@ document.head.appendChild(style);
     };
     var selected_rownum=null;
     var data=config.data===null?[]:config.data;
+    if(typeof data==='string') {
+      (async()=>{
+        const res=await fetch(data).then(d=>d.json());
+        data=await res.json();
+      })();
+    }
+
     var fdata=data;//filtered data
     var table=document.getElementById(id)||document.body.appendChild(table=document.createElement("TABLE"));
     var tbody=table.querySelector(":scope tbody") || table.appendChild(tbody=document.createElement("TBODY"));
@@ -145,21 +152,24 @@ document.head.appendChild(style);
         thead.querySelectorAll("tr th").forEach((th,idx) => {
           var f=document.createElement("TH");
           var i=undefined;
-          if(config.columns[idx]!==undefined && config.columns[idx].filter!==this.undefined) {
-              i=document.createElement("SELECT");i.add(document.createElement("OPTION"));
-              //i.setAttribute("multiple","multiple");
-              var ff=config.columns[idx].filter;
-              if(null===ff) {ff=[];fdata.forEach(v=>{if(!ff.includes(v[idx]))ff.push(v[idx])});ff.sort();}
-              ff.forEach(v=>{var o=document.createElement("OPTION");o.innerText=((typeof v == 'object')?v.name:v);o.value=(typeof v =='object')?v.value:v;i.add(o);});
-          } else {
-            i=document.createElement("INPUT");
-            i.setAttribute("type",(undefined===config.columns[idx])?'text':config.columns[idx].type);
-          }
-          i.classList.add("form-control");
-          i.style.width="100%";
+          if(config.columns[idx].filterable===undefined || config.columns[idx].filterable!==false){
+            if(config.columns[idx]!==undefined && config.columns[idx].filter!==this.undefined) {
+                i=document.createElement("SELECT");i.add(document.createElement("OPTION"));
+                //i.setAttribute("multiple","multiple");
+                var ff=config.columns[idx].filter;
+                if(null===ff) {ff=[];fdata.forEach(v=>{if(!ff.includes(vv(v,idx)))ff.push(vv(v,idx))});ff.sort();}
+                ff.forEach(v=>{var o=document.createElement("OPTION");o.innerText=((typeof v == 'object')?v.name:v);o.value=(typeof v =='object')?v.value:v;i.add(o);});
+            } else {
+              i=document.createElement("INPUT");
+              i.setAttribute("type",(undefined===config.columns[idx])?'text':config.columns[idx].type);
+            }
+            i.classList.add("form-control");
+            i.style.width="100%";
 
-          i.dataset.i=idx;
-          f.append(i);r.append(f);
+            i.dataset.i=idx;
+            f.append(i);
+          }
+          r.append(f);
         });
         thead.append(r);
         r.querySelectorAll(":scope input, select").forEach(i=>{i.addEventListener("change",function(e){render();});});
@@ -189,10 +199,11 @@ document.head.appendChild(style);
                 opts.forEach(y=>{if(y!='' && x[i.dataset.i].includes(y)) ok2=true;});
                 if(!ok2) ok=false;
               }
-              else if(i.type==='checkbox') {if(i.checked && !isChecked(x[i.dataset.i])) ok=false;}
-              else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!='' && !(x[i.dataset.i]==i.value)) ok=false;}
+              else if(i.type==='checkbox') {if(i.checked && !isChecked(vv(x,i.dataset.i))) ok=false;}
+              else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!='' && !(vv(x,i.dataset.i)==i.value)) ok=false;}
               else if(i.value!='' && (typeof vv(x,i.dataset.i) =='number') && vv(x,i.dataset.i)!=(i.value)) ok=false;
               else if(i.value!='' && (typeof vv(x,i.dataset.i) =='string')&& !vv(x,i.dataset.i).includes(i.value)) ok=false;
+              
               if(ok && config.q!=''){
                 ok = (config.columns.find((f,ci)=>(typeof vv(x,ci) == 'number'?vv(x,ci)==config.q:(vv(x,ci).includes(config.q))))!==undefined);
               }
@@ -236,7 +247,7 @@ document.head.appendChild(style);
         })});
 
         if(tfoot!==null){
-          tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(data,td):config.columns[idx].footer});
+          tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(fdata,td):config.columns[idx].footer});
         }
         config.onRender();            
     };
