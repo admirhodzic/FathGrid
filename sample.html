@@ -81,13 +81,13 @@
           type:'text', //edit input type: text, date, email, checkbox
         },
         {type:'text',editable:true,
-          name:'salary',header:'Salary',
+          name:'salary',header:'Salary',class:"text-right",
           footer:function(data){return (data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))},
           groupFooter:function(data){return (data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))}
         },
         {name:'gender',filter:['Female','Male'],header:'Gender',listOfValues:['Female','Male']},
         {name:'active',type:'checkbox',header:'Active',filter:[{value:0,name:'No'},{value:1,name:'Yes'}]},
-        {filterable:false,name:'photo',html:function(item){return `<img  src="${item.photo}"/>`},header:'Img'},
+        {filterable:false,editable:false,name:'photo',html:function(item){return `<img  src="https://i.pravatar.cc/32?u=${item.id}"/>`},header:'Img'},
       ],
       data:demodata
     });
