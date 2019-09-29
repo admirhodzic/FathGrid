@@ -113,7 +113,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>groupOn</td><td>function which returns a HTML string to group records on</td><td>{}</td></tr>
 <tr><td>sortBy</td><td>Array or column indices to sort always. Usable for grouping records.</td><td>{}</td></tr>
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
-<tr><td>serverURL</td><td>templated string URL for data retrieval</td><td>undefined</td>eg: https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}</tr>
+<tr><td>serverURL</td><td>templated string URL for data retrieval. eg: https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}</td><td>undefined</td></tr>
 <tr><td>loading</td><td>message to show while loading data from server</td><td>Loading...</td></tr>
 </tbody>
 </table>
