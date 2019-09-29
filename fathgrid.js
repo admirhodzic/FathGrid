@@ -32,6 +32,7 @@ document.head.appendChild(style);
         editable:false,
         filterable:true,
         sortable:true,
+        paginable:true,
         showFooter:false,
         showGroupFooter:false,
         sort:[],
@@ -43,9 +44,10 @@ document.head.appendChild(style);
         data:null,
         editinput:undefined,
         q:'',
+        loading:'Loading...',
         ..._config
     };
-    var selected_rownum=null;
+    var selected_rownum=null, totalRecords=0, filteredRecords=0;
     var data=config.data===null?[]:config.data;
     if(typeof data==='string') {
       (async()=>{
@@ -54,7 +56,6 @@ document.head.appendChild(style);
       })();
     }
 
-    var fdata=data;//filtered data
     var table=document.getElementById(id)||document.body.appendChild(table=document.createElement("TABLE"));
     var tbody=table.querySelector(":scope tbody") || table.appendChild(tbody=document.createElement("TBODY"));
     var thead=table.querySelector(":scope thead") || table.insertBefore(thead=document.createElement("THEAD"),tbody);
@@ -62,7 +63,7 @@ document.head.appendChild(style);
     if(thead.querySelectorAll(":scope th").length===0) {
       var tr=document.createElement("TR");
       thead.appendChild(tr);
-      config.columns.forEach((c,i)=>{tr.appendChild(th=document.createElement("TH"));if(c.visible===false) th.style.display="none";(c.class||'').split(' ').filter(x=>x!='').forEach(c1=>th.classList.add(c1));});
+      config.columns.forEach((c,i)=>{tr.appendChild(th=document.createElement("TH"));if(c.visible===false) th.style.display="none";th.dataset.name=c.name||i;(c.class||'').split(' ').filter(x=>x!='').forEach(c1=>th.classList.add(c1));});
     }
     
     var editinput=undefined;
@@ -72,19 +73,24 @@ document.head.appendChild(style);
         <ul class="pagination" >
           <li class="page-item"><a class="page-link firstpage" title="First" href="#">&#x2503;&#x23F4;</a></li>
           <li class="page-item"><a class="page-link prevpage" title="Previous" href="#">&#x23F4;</a></li>
-          <li class="page-item active"><a class="page-link gotopage" title="Goto page" href="javascript:void(0)">${config.page} / ${Math.floor((fdata.length+(config.size-1))/config.size)}</a></li>
+          <li class="page-item active"><a class="page-link gotopage" title="Goto page" href="javascript:void(0)">${config.page} / ${Math.floor((filteredRecords+(config.size-1))/config.size)}</a></li>
           <li class="page-item"><a class="page-link nextpage" title="Next" href="#">&#x23f5;</a></li>
           <li class="page-item"><a class="page-link lastpage" title="Last" href="#">&#x23f5;&#x2503;</a></li>
-        </ul><span class="page-info">${(config.page-1)*config.size}-${Math.min(fdata.length,config.page*config.size)} of ${data.length!=fdata.length?`${fdata.length}/ `:''} ${data.length}</span>
+        </ul><span class="page-info">${(config.page-1)*config.size}-${Math.min(filteredRecords,config.page*config.size)} of ${totalRecords!=filteredRecords?`${filteredRecords}/ `:''} ${totalRecords}</span>
       `;
     }
-    var nextPage=function(){config.page=Math.floor(Math.min(config.page+1,(fdata.length+config.size-1)/config.size));render();};
+    var nextPage=function(){config.page=Math.floor(Math.min(config.page+1,(filteredRecords+config.size-1)/config.size));render();};
     var prevPage=function(){config.page=Math.max(1, config.page-1);render();};
-    var lastPage=function(){config.page=Math.floor((fdata.length+config.size-1)/config.size);render();};
+    var lastPage=function(){config.page=Math.floor((filteredRecords+config.size-1)/config.size);render();};
     var firstPage=function(){config.page=1;render();};
     function clearSelection(){if (window.getSelection) {if (window.getSelection().empty) { window.getSelection().empty();} else if (window.getSelection().removeAllRanges) {  window.getSelection().removeAllRanges();}} else if (document.selection) {  document.selection.empty();}}
     
     var getSort=function(){      return config.sort;    };
+    var selectRow=function(rownum){
+      selected_rownum=rownum;
+      (tbody.querySelectorAll(":scope tr.selected")||[]).forEach(e=>e.classList.remove("selected"));
+      tbody.querySelector(":scope tr[data-rownum='"+rownum+"']").classList.add("selected");
+    };
 
     var vv=function(item,idx){return config.columns[idx].name!==undefined?(item[config.columns[idx].name]):(item[idx]);};
     var vv2=function(item,idx){return (config.columns[idx].value!==undefined)?(config.columns[idx].value(item)):(vv(item,idx));};
@@ -97,14 +103,14 @@ document.head.appendChild(style);
     table.parentNode.insertBefore(wrapper,table);
     wrapper.appendChild(table);
 
-    table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
+    if(config.paginable) table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
     table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav dropdown" id="exporter${id}"><a href="javascript:void(0)">Export</a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`);
     var paginator=table.parentElement.querySelector(`#paginator${id}`);
     var exporter=table.parentElement.querySelector(`#exporter${id}`);
     exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
     ("fathgrid ").split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
 
-    if(data===null || data.length===0) table.querySelectorAll(":scope tbody tr").forEach((tr,idx) => {
+    if(data===null || totalRecords===0) table.querySelectorAll(":scope tbody tr").forEach((tr,idx) => {
       var row=[];
       tr.querySelectorAll(":scope td").forEach(td => {
         row.push(td.innerText);
@@ -126,108 +132,152 @@ document.head.appendChild(style);
       }
     }
 
+    var getFilter=function(){
+      r=[];
+      thead.querySelectorAll(":scope input, select").forEach((i)=>{if(''!=i.value) r[config.columns[i.dataset.i].name]=i.value});
+      return r;
+    };
+
+    var getData=async function(){
+      if(config.serverURL!==undefined){
+        const parameters = {
+          page: config.page,
+          size: config.size,
+          search: config.q,
+          sort:config.sort.map(i=>config.columns[Math.abs(i)-1].name).join(','),
+          order:config.sort.map(i=>i<0?'desc':'asc'),
+          filters: Object.keys(getFilter()).map(k=>k+"="+getFilter()[k]).join("&"),
+        };
+        var url=config.serverURL.replace(/\${(\w+)}/g, (x, y) => parameters[y]),range;
+        const ret=await (async function(){
+          const res=await fetch(url);
+          totalRecords=parseInt(res.headers.get("x-total-count"));
+          range=res.headers.get("Content-Range");
+          return await res.json();
+        })();
+
+        data=Array.isArray(ret)?ret:(ret.content!==undefined?ret.content:ret.data);
+        
+        data=data.map((x,idx)=>{x.rownum=idx+1;return x;});//add rownum prop
+
+        filteredRecords=totalRecords;
+        return data;
+      }
+
+      totalRecords=data.length;
+      var fdata=data.filter(x=>{
+        var ok=true;
+
+        thead.querySelectorAll(":scope input, select").forEach((i)=>{
+          var opts=Array.from(i.querySelectorAll(":scope option:checked"),y=>y.value);
+          if(opts.filter(a=>a!='').length>1){
+            var ok2=false;
+            opts.forEach(y=>{if(y!='' && x[i.dataset.i].includes(y)) ok2=true;});
+            if(!ok2) ok=false;
+          }
+          else if(i.type==='checkbox') {if(i.checked && !isChecked(vv(x,i.dataset.i))) ok=false;}
+          else if(i.type==='color') {if(i.value!='#000000' && !(vv(x,i.dataset.i)==i.value)) ok=false;}
+          else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!='' && !(vv(x,i.dataset.i)==i.value)) ok=false;}
+          else if(i.value!='' && (typeof vv(x,i.dataset.i) =='number') && vv(x,i.dataset.i)!=(i.value)) ok=false;
+          else if(i.value!='' && (typeof vv(x,i.dataset.i) =='string')&& !vv(x,i.dataset.i).includes(i.value)) ok=false;
+          
+          if(ok && config.q!=''){
+            ok = (config.columns.find((f,ci)=>(typeof vv(x,ci) == 'number'?vv(x,ci)==config.q:(typeof vv(x,ci)=='string'?(vv(x,ci).includes(config.q)):(vv(x,ci)==config.q))))!==undefined);
+          }
+        });
+        return ok;
+      });
+      filteredRecords=fdata.length;
+      return fdata.slice((config.page-1)*config.size,config.page*config.size);
+    }
 
     var render=function(){
         table.querySelectorAll(":scope tbody tr").forEach(tr => {tr.parentNode.removeChild(tr);});
 
-        fdata=data.filter(x=>{
-            var ok=true;
+        tbody.innerHTML=`<tr><td colspan="${config.columns.length}">${config.loading}</td></tr>`;
+        getData().then(dd=>{
+          [...tbody.children].forEach(x=>tbody.removeChild(x));
+          if((config.page-1)*config.size >= filteredRecords) config.page=1;
 
-            thead.querySelectorAll(":scope input, select").forEach((i)=>{
-              var opts=Array.from(i.querySelectorAll(":scope option:checked"),y=>y.value);
-              if(opts.filter(a=>a!='').length>1){
-                var ok2=false;
-                opts.forEach(y=>{if(y!='' && x[i.dataset.i].includes(y)) ok2=true;});
-                if(!ok2) ok=false;
-              }
-              else if(i.type==='checkbox') {if(i.checked && !isChecked(vv(x,i.dataset.i))) ok=false;}
-              else if(i.type==='color') {if(i.value!='#000000' && !(vv(x,i.dataset.i)==i.value)) ok=false;}
-              else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!='' && !(vv(x,i.dataset.i)==i.value)) ok=false;}
-              else if(i.value!='' && (typeof vv(x,i.dataset.i) =='number') && vv(x,i.dataset.i)!=(i.value)) ok=false;
-              else if(i.value!='' && (typeof vv(x,i.dataset.i) =='string')&& !vv(x,i.dataset.i).includes(i.value)) ok=false;
-              
-              if(ok && config.q!=''){
-                ok = (config.columns.find((f,ci)=>(typeof vv(x,ci) == 'number'?vv(x,ci)==config.q:(typeof vv(x,ci)=='string'?(vv(x,ci).includes(config.q)):(vv(x,ci)==config.q))))!==undefined);
-              }
-            });
-            return ok;
-        });
-        if((config.page-1)*config.size >= fdata.length) config.page=1;
-
-        var lastgroup=null,gg,gtr,gtd,groupdata=[];
-        fdata.slice((config.page-1)*config.size,config.page*config.size).forEach((dr,idx)=>{
-          
-            if(typeof config.groupOn==='function' && lastgroup!==(gg=config.groupOn(dr,idx))){
-              if(config.showGroupFooter===true && lastgroup!==null){
-                tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
-                config.columns.forEach((c,i)=>{
-                  gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
-                  (c.class||'').split(' ').filter(x=>x!='').forEach(c=>gtd.classList.add(c));
-                  gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
-                });
-              }
-              tbody.appendChild(gtr=document.createElement("TR"));gtr.appendChild(document.createElement("TD"));
-              gtr.classList.add("group-row");
-              gtr.querySelector(":scope TD").setAttribute("colspan",config.columns.filter(x=>x.visible!==false).length);
-              gtr.querySelector(":scope TD").innerHTML=`<b>${gg}</b>`;
-              lastgroup=gg;
-              groupdata=[];
-            }
-
-            var r=document.createElement("tr");
-            r.dataset.id=dr.id;
-            r.dataset.rownum=dr.rownum;
-            if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
+          var lastgroup=null,gg,gtr,gtd,groupdata=[];
+          dd.forEach((dr,idx)=>{
             
-            config.columns.forEach((column,col)=>{
-              var c=document.createElement('td');
-              if(column.visible===false) c.style.display="none";
-              (column.class||'').split(' ').filter(x=>x!='').forEach(c1=>c.classList.add(c1));
-              var x=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[col]);
-              if(column.type=='checkbox') {
-                c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((column.editable===false ||(typeof column.editable =='function' && column.editable(dr,col+1)===false)) || config.editable==false)?'disabled':''} />`;
-                c.querySelector(":scope input[type=checkbox]").addEventListener("click",function(e){
-                  config.onChange(dr,col,!e.srcElement.checked,e.srcElement.checked);
-                });
+              if(typeof config.groupOn==='function' && lastgroup!==(gg=config.groupOn(dr,idx))){
+                if(config.showGroupFooter===true && lastgroup!==null){
+                  tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
+                  config.columns.forEach((c,i)=>{
+                    gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
+                    (c.class||'').split(' ').filter(x=>x!='').forEach(c=>gtd.classList.add(c));
+                    gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
+                  });
+                }
+                tbody.appendChild(gtr=document.createElement("TR"));gtr.appendChild(document.createElement("TD"));
+                gtr.classList.add("group-row");
+                gtr.querySelector(":scope TD").setAttribute("colspan",config.columns.filter(x=>x.visible!==false).length);
+                gtr.querySelector(":scope TD").innerHTML=`<b>${gg}</b>`;
+                lastgroup=gg;
+                groupdata=[];
               }
-              else if(column.html!==undefined) c.innerHTML=column.html(dr);
-              else c.innerText=x;
-              r.appendChild(c);
-
-            })
-            tbody.appendChild(r);
-            if(undefined!==config.groupOn && config.showGroupFooter===true) groupdata.push(dr);
-        });
-        //copy of code from above to draw last group footer
-        
-        if(undefined!==config.groupOn && config.showGroupFooter===true){
-          tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
-          config.columns.forEach((c,i)=>{
-            gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
-            (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>gtd.classList.add(c1));
-            gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
+  
+              var r=document.createElement("tr");
+              r.dataset.id=dr.id;
+              r.dataset.rownum=dr.rownum;
+              if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
+              
+              config.columns.forEach((column,col)=>{
+                var c=document.createElement('td');
+                if(column.visible===false) c.style.display="none";
+                (column.class||'').split(' ').filter(x=>x!='').forEach(c1=>c.classList.add(c1));
+                var x=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[col]);
+                if(column.type=='checkbox') {
+                  c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((column.editable===false ||(typeof column.editable =='function' && column.editable(dr,col+1)===false)) || config.editable==false)?'disabled':''} />`;
+                  c.querySelector(":scope input[type=checkbox]").addEventListener("click",function(e){
+                    config.onChange(dr,col,!e.srcElement.checked,e.srcElement.checked);
+                  });
+                }
+                else if(column.html!==undefined) c.innerHTML=column.html(dr);
+                else c.innerText=x;
+                r.appendChild(c);
+  
+              })
+              tbody.appendChild(r);
+              if(undefined!==config.groupOn && config.showGroupFooter===true) groupdata.push(dr);
           });
-          groupdata=[];
-        }
-        
+          //copy of code from above to draw last group footer
+          
+          if(undefined!==config.groupOn && config.showGroupFooter===true){
+            tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
+            config.columns.forEach((c,i)=>{
+              gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
+              (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>gtd.classList.add(c1));
+              gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
+            });
+            groupdata=[];
+          }
+          
+  
+  
+          if(config.paginable){
+            paginator.innerHTML=renderPaginator();
+            paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
+            paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
+            paginator.querySelectorAll(".lastpage").forEach(x=>{x.addEventListener('click',function(e){lastPage();stop(e);})});
+            paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
+            paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){config.page=Math.max(1,Math.min(filteredRecords/config.page,parseInt(prompt("Go to page number",config.page)||0)));render();stop(e);})});
+          }
+  
+          tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
+            selectRow(e.srcElement.parentElement.closest("TR").dataset.rownum);
+            config.onClick(data[selected_rownum-1],[...e.srcElement.parentElement.closest("TR").children].indexOf(e.srcElement.closest("TD"))+1,e.srcElement.closest("TD"));
+          })});
+  
+          if(tfoot!==null){
+            tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(dd,td):config.columns[idx].footer});
+          }
+          config.onRender();            
+  
+        });
 
-
-        paginator.innerHTML=renderPaginator();
-        paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
-        paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
-        paginator.querySelectorAll(".lastpage").forEach(x=>{x.addEventListener('click',function(e){lastPage();stop(e);})});
-        paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
-        paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){config.page=Math.max(1,Math.min(fdata.length/config.page,parseInt(prompt("Go to page number",config.page)||0)));render();stop(e);})});
-
-        tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
-          selected_rownum=e.srcElement.parentElement.closest("TR").dataset.rownum;
-          config.onClick(data[selected_rownum-1],[...e.srcElement.parentElement.closest("TR").children].indexOf(e.srcElement.closest("TD"))+1,e.srcElement.closest("TD"));
-        })});
-
-        if(tfoot!==null){
-          tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(fdata,td):config.columns[idx].footer});
-        }
-        config.onRender();            
     };
     var sort=function(i,desc,multisort,wantRender){
       var ss=config.sort;
@@ -261,7 +311,7 @@ document.head.appendChild(style);
 
     if(config.sortBy!==this.undefined) {config.sortBy.map(c=>sort(c,false,true,false));}
 
-    thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={};if(undefined!==config.columns[i].header) th.innerText=config.columns[i].header});
+    thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={};if(th.innerText==='')th.innerText=config.columns[i].header||config.columns[i].name;});
 
     if(config.sortable) thead.querySelectorAll("tr th").forEach((th,i) => {th.style.cursor="pointer";th.addEventListener('click',function(e){sort(i+1,undefined,e.shiftKey);stop(e);clearSelection()});});
 
@@ -275,7 +325,7 @@ document.head.appendChild(style);
                 i=document.createElement("SELECT");i.add(document.createElement("OPTION"));
                 //i.setAttribute("multiple","multiple");
                 var ff=config.columns[idx].filter;
-                if(null===ff) {ff=[];fdata.forEach(v=>{if(!ff.includes(vv(v,idx)))ff.push(vv(v,idx))});ff.sort();}
+                if(null===ff) {ff=[];data.forEach(v=>{if(!ff.includes(vv(v,idx)))ff.push(vv(v,idx))});ff.sort();}
                 ff.forEach(v=>{var o=document.createElement("OPTION");o.innerText=((typeof v == 'object')?v.name:v);o.value=(typeof v =='object')?v.value:v;i.add(o);});
             } else {
               i=document.createElement("INPUT");
@@ -465,18 +515,17 @@ document.head.appendChild(style);
       getSort:getSort,
       setSort:function(ss){if(typeof ss=='number') ss=[ss];config.sort=[];ss.map(x=>sort(Math.abs(x),x<0,true));render();},
       filter:function(idx,str){thead.querySelector(".filter th:nth-child("+idx+")").querySelector(":scope input, select").value=str;render();},
-      getFilter:function(){
-        r={};
-        thead.querySelectorAll(":scope input, select").forEach((i)=>{if(''!=i.value) r[parseInt(i.dataset.i)+1]=i.value});
-        return r;
-      },
+      getFilter:getFilter,
       editCell:editCell,
       getData:function(){return data.map(x=>x);},
       setData:function(newdata){data=[];newdata.map(x=>data.push(x));render();},
       getExportData:getExportData,
       export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt=='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
       search:function(q){if(q===undefined) return config.q; config.q=q;render();},
-      getSelectedItem:function(){return selected_rownum?data[selected_rownum-1]:null;}
+      getSelectedItem:function(){return selected_rownum?data[selected_rownum-1]:null;},
+      setServerURL:function(u){config.serverURL=u;render();},
+      wrapperEl:wrapper,
+      selectRow:selectRow,
     }
   }
 })(typeof window !== "undefined" ? window : this));

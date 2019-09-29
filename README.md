@@ -8,7 +8,8 @@ No dependencies pure JavaScript data table/grid with:
 - custom row highlights,
 - grouping (with group header/footer),
 - in-place data edit mode,
-- inline data, JSON fetching or server-side processing.
+- inline data, JSON fetching or server-side processing,
+- sub-grid.
 
 ![Sample screenshot](/fathgrid.png)
 
@@ -86,7 +87,12 @@ Table content can be set using array of JSON objects. In that case, columns defi
           data:json,
         });
       })
-
+## Server-side data
+For huge data amounts, use server-side processing (sorting, paginating and filtering) with **serverURL** configuration option:
+    t1=FathGrid("table1",{
+      serverURL:'https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}',
+      ...
+    });
 
 
 ## Configuration options
@@ -96,6 +102,7 @@ Table content can be set using array of JSON objects. In that case, columns defi
 <tr><td>page</td><td>page number to show</td><td>1</td></tr>
 <tr><td>filterable</td><td>show filter row in thead</td><td>true</td></tr>
 <tr><td>editable</td><td>allow edits</td><td>true</td></tr>
+<tr><td>paginable</td><td>allow pagination</td><td>true</td></tr>
 <tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
 <tr><td>showFooter</td><td>add footer row to table</td><td>false</td></tr>
 <tr><td>showGroupFooter</td><td>add footer row after each group of records</td><td>false</td></tr>
@@ -105,6 +112,8 @@ Table content can be set using array of JSON objects. In that case, columns defi
 <tr><td>groupOn</td><td>function which returns a HTML string to group records on</td><td>{}</td></tr>
 <tr><td>sortBy</td><td>Array or column indices to sort always. Usable for grouping records.</td><td>{}</td></tr>
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
+<tr><td>serverURL</td><td>templated string URL for data retrieval</td><td>undefined</td>eg: https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}</tr>
+<tr><td>loading</td><td>message to show while loading data from server</td><td>Loading...</td></tr>
 </tbody>
 </table>
 
