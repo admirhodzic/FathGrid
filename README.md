@@ -89,6 +89,7 @@ Table content can be set using array of JSON objects. In that case, columns defi
       })
 ## Server-side data
 For huge data amounts, use server-side processing (sorting, paginating and filtering) with **serverURL** configuration option:
+
     t1=FathGrid("table1",{
       serverURL:'https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}',
       ...
