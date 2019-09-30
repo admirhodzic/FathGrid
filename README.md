@@ -6,6 +6,7 @@ No dependencies pure JavaScript data table/grid with:
 - filtering (with text input or selecting from a list),
 - export to txt, csv, pdf, xls, etc.,
 - custom row highlights,
+- show/hide columns,
 - grouping (with group header/footer),
 - in-place data edit mode,
 - inline data, JSON fetching or server-side processing,
@@ -115,6 +116,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
 <tr><td>serverURL</td><td>templated string URL for data retrieval</td><td>undefined</td></tr>
 <tr><td>loading</td><td>message to show while loading data from server</td><td>Loading...</td></tr>
+<tr><td>selectColumns</td><td>enable column show/hide tool</td><td>false</td></tr>
 </tbody>
 </table>
 

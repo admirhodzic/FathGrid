@@ -4,7 +4,7 @@ style.innerHTML = `
   .fathgrid th.sorted, th.sorted-desc {position: relative;}
   .fathgrid th.sorted::after {content:"▲";position:absolute;right: 1em;}
   .fathgrid th.sorted-desc::after {content:"▼";position:absolute;right: 1em;}
-  .fathgrid-export-nav {float:right;}
+  .fathgrid-export-nav, .fathgrid-columns-nav {float:right;}
   .fathgrid-wrapper {position:relative;}
   .fathgrid-wrapper .page-info {position:absolute;top:0}
   .fathgrid-wrapper .dropdown {    position: relative;    display: inline-block;  }
@@ -21,8 +21,13 @@ style.innerHTML = `
   .fathgrid-wrapper .dropdown:hover .dropdown-content a {display:block;padding:0.1em 2em;margin:2px 0;}
   .fathgrid-wrapper .dropdown:hover .dropdown-content a:hover {background-color:#eee;}
   .fathgrid-wrapper .error {border-color:red;}
+
+  .fathgrid-wrapper input, .fathgrid-wrapper textarea , .fathgrid-wrapper select {border:0;}
+
+  .fathgrid-wrapper nav a.checked::before{content:'✓';position:absolute;left:1em;}  
 `;
 document.head.appendChild(style);
+
 ((function(win){
   win.FathGrid=function(id,_config){
     var config={
@@ -33,7 +38,9 @@ document.head.appendChild(style);
         filterable:true,
         sortable:true,
         paginable:true,
+        exportable:true,
         showFooter:false,
+        selectColumns:false,
         showGroupFooter:false,
         sort:[],
         columns:[],
@@ -91,6 +98,16 @@ document.head.appendChild(style);
       (tbody.querySelectorAll(":scope tr.selected")||[]).forEach(e=>e.classList.remove("selected"));
       tbody.querySelector(":scope tr[data-rownum='"+rownum+"']").classList.add("selected");
     };
+    var showColumn=function(idx,bShow){
+      config.columns[idx].visible=bShow;
+      redraw();
+    };
+    var redraw=function(){
+      thead.querySelectorAll(":scope tr:not(.filter) th").forEach((th,idx)=>{th.style.display=(config.columns[idx].visible===false?'none':'table-cell')});
+      thead.querySelectorAll(":scope tr.filter th").forEach((th,idx)=>{th.style.display=(config.columns[idx].visible===false?'none':'table-cell')});
+      drawFooter();
+      render();
+    };
 
     var vv=function(item,idx){return config.columns[idx].name!==undefined?(item[config.columns[idx].name]):(item[idx]);};
     var vv2=function(item,idx){return (config.columns[idx].value!==undefined)?(config.columns[idx].value(item)):(vv(item,idx));};
@@ -104,7 +121,17 @@ document.head.appendChild(style);
     wrapper.appendChild(table);
 
     if(config.paginable) table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
-    table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav dropdown" id="exporter${id}"><a href="javascript:void(0)">Export</a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`);
+
+    if(config.selectColumns) {
+      table.insertAdjacentHTML("beforebegin",`<nav class="fathgrid-columns-nav dropdown" id="exporter${id}"><a href="javascript:void(0)">
+        <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" ><g transform="rotate(90 16 16)"><path d="M0 0h8v8h-8zM12 2h20v4h-20zM0 12h8v8h-8zM12 14h20v4h-20zM0 24h8v8h-8zM12 26h20v4h-20z"></path></g></svg>
+        </a><div class="dropdown-content">${config.columns.map((c,idx)=>`<a class="${c.visible!==false?'checked':''}" data-i="${idx}" href="#">${c.name}</a>`).join(' ')}</div></nav>`);
+      wrapper.querySelectorAll(":scope .fathgrid-columns-nav a").forEach(x=>x.addEventListener("click",function(e){x.classList.toggle("checked");showColumn(x.dataset.i,x.classList.contains("checked"));stop(e);}));
+    }
+
+    if(config.exportable) table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav dropdown" id="exporter${id}"><a href="javascript:void(0)">
+    <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" ><path d="M23 14l-8 8-8-8h5v-12h6v12zM15 22h-15v8h30v-8h-15zM28 26h-4v-2h4v2z"></path></svg>
+    </a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`);
     var paginator=table.parentElement.querySelector(`#paginator${id}`);
     var exporter=table.parentElement.querySelector(`#exporter${id}`);
     exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
@@ -123,14 +150,22 @@ document.head.appendChild(style);
     }
     data=data.map((x,idx)=>{x.rownum=idx+1;return x;});//add rownum prop
 
-    var tfoot=table.querySelector("TFOOT");
-    if(config.showFooter){
-      if(tfoot===null) {
-        tfoot=document.createElement("TFOOT");
+    var tfoot=table.querySelector("TFOOT");;
+
+    var drawFooter=function(){
+      if(config.showFooter){
+        if(tfoot===null) {
+          tfoot=document.createElement("TFOOT");
+          table.appendChild(tfoot);
+          tfoot.innerHTML=`<tr></tr>`;
+        }
+        else tfoot.innerHTML='<tr></tr>';
+
         config.columns.forEach((c,idx)=>{var td=this.document.createElement("TH");td.dataset.i=idx;tfoot.appendChild(td);if(c.visible===false) td.style.display='none';(c.class||'').split(' ').filter(x=>x!='').forEach(c1=>td.classList.add(c1));});
-        table.appendChild(tfoot);
+        
       }
-    }
+    };
+    drawFooter();
 
     var getFilter=function(){
       r=[];
@@ -263,7 +298,15 @@ document.head.appendChild(style);
             paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
             paginator.querySelectorAll(".lastpage").forEach(x=>{x.addEventListener('click',function(e){lastPage();stop(e);})});
             paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
-            paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){config.page=Math.max(1,Math.min(filteredRecords/config.page,parseInt(prompt("Go to page number",config.page)||0)));render();stop(e);})});
+            paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){
+              x.innerHTML=`<input id="gotopage" style="width:3em;text-align:center;" type="number" min="1" max="${(filteredRecords+config.size-1)/config.size}" value="${config.page}"/>`;
+              var gti=x.querySelector(":scope input");
+              gti.focus();
+              gti.select();
+              gti.addEventListener("change",function(e){
+                config.page=Math.max(1,parseInt(e.srcElement.value));stop(e);render()
+              })
+            })});
           }
   
           tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
@@ -331,7 +374,7 @@ document.head.appendChild(style);
               i=document.createElement("INPUT");
               i.setAttribute("type",(undefined===config.columns[idx])?'text':config.columns[idx].type);
             }
-            i.classList.add("form-control");
+            
             i.style.width="100%";
             if(config.columns[idx].visible===false) f.style.display='none';
 
@@ -378,7 +421,7 @@ document.head.appendChild(style);
       var t=el.innerText;
       var i=null;
       if(undefined!==column && column.listOfValues!==undefined){
-        el.innerHTML=`<select style="width:100%;" class="form-control" id="coledit"  ></select>`;
+        el.innerHTML=`<select style="width:100%;" id="coledit"  ></select>`;
         i=el.querySelector(":scope #coledit");
         var lov=column.listOfValues;if(typeof lov=="function") lov=lov(data[rownum-1],col,el);
 
@@ -388,7 +431,7 @@ document.head.appendChild(style);
       }
       else {
         
-        el.innerHTML=column.type=='textarea'?(`<textarea id="coledit" style="width:${el.clientWidth}px;height:${el.clientHeight}px" class="form-control"></textarea>`):`<input type="${coltype}" ${column.title!==undefined?`title="${column.title}"`:''} ${column.pattern!==undefined?`pattern="${column.pattern}"`:''} style="width:100%;" class="form-control" id="coledit" value=""/>`;
+        el.innerHTML=column.type=='textarea'?(`<textarea id="coledit" style="width:${el.clientWidth}px;height:${el.clientHeight}px" ></textarea>`):`<input type="${coltype}" ${column.title!==undefined?`title="${column.title}"`:''} ${column.pattern!==undefined?`pattern="${column.pattern}"`:''} style="width:100%;" id="coledit" value=""/>`;
         i=el.querySelector(":scope #coledit");
         i.value=t;
         i.focus();
@@ -451,9 +494,9 @@ document.head.appendChild(style);
     }
     var getExportData=function(fmt){
       var ret="";
-      if(fmt=="txt") data.forEach(r=>{ret+="\n";r.forEach(f=>{ret+=f+"\t"})});
-      if(fmt=="csv") {ret+="sep=,\n";data.forEach(r=>{r.forEach(f=>{ret+="\""+f.replace("\"","\\\"")+"\","});ret+="\n";});}
-      if(fmt=="html" || fmt=='xls') {ret+="<table><tbody>"+data.map(r=>{return "<tr>"+r.map(f=>{return "<td>"+f+"</td>"}).join('')+"</tr>";}).join('')+"</tbody></table>";}
+      if(fmt=="txt") data.forEach(r=>{ret+="\n";Object.keys(r).forEach(k=>{ret+=r[k]+"\t"})});
+      if(fmt=="csv") {ret+="sep=,\n";data.forEach(r=>{Object.keys(r).forEach(k=>{ret+="\""+r[k].replace("\"","\\\"")+"\","});ret+="\n";});}
+      if(fmt=="html" || fmt=='xls') {ret+="<table><tbody>"+data.map(r=>{return "<tr>"+Object.keys(r).map(k=>{return "<td>"+r[k]+"</td>"}).join('')+"</tr>";}).join('')+"</tbody></table>";}
       if(fmt=='xls'){
         const TEMPLATE_XLS = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -484,9 +527,9 @@ document.head.appendChild(style);
         data.forEach(r=>{
           ii=0;
           var lines=0;
-          r.forEach(f=>{
-            var w=doc.getTextWidth(f);
-            doc.text(f,x,y,{maxWidth:(cw[ii]/cww)*20-0.1});
+          Object.keys(r).forEach(k=>{
+            var w=doc.getTextWidth(r[k]);
+            doc.text(''+r[k],x,y,{maxWidth:(cw[ii]/cww)*20-0.1});
             lines=Math.max(lines,w/((cw[ii]/cww)*20-0.1));
             x+=(cw[ii++]/cww)*20;
           });

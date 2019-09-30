@@ -44,8 +44,8 @@
   
   <script src="demodata.js"></script>
     <script>
-  
-    var t1=FathGrid("table1",{
+
+var t1=FathGrid("table1",{
       size:10,
       editable:true,
       filterable:true,
@@ -58,7 +58,7 @@
       sortBy:[1],//group on first column
       groupOn:item=>`${item.country}`, //group expression
       showGroupFooter:true,
-
+      selectColumns:true,
       columns:[
         {name:'country',header:'Country',visible:false}, //invisible grouping column
         {
