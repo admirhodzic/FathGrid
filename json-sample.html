@@ -17,24 +17,30 @@
     <script src="fathgrid.js"></script>
   </head>
   <body>
-      <div class="container-fluid">
-    <h1>FathGrid with json data</h1>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 ">
+            <h1>FathGrid with json data</h1>
 
-    <div style="display: flex;">
-      <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
-      <div style="flex-grow: 1">
+            <div style="display: flex;">
+              <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
+              <div style="flex-grow: 1">
+                
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Search</span>
+                  </div>
+                  <input onchange="t1.search(this.value)" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+                </div>        
+              </div>
+            </div>
         
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="inputGroup-sizing-default">Search</span>
-          </div>
-          <input onchange="t1.search(this.value)" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
-        </div>        
+            <table  id="table1" class="table table-hover table-bordered ">       <thead class="thead-light"></thead> </table>
+        
+        </div>
       </div>
     </div>
 
-    <table  id="table1" class="table table-hover table-bordered ">       <thead class="thead-light"></thead> </table>
-  </div>
   
     <script>
         var t1,users=[];
@@ -61,7 +67,7 @@ fetch('https://jsonplaceholder.typicode.com/users')
                 header:'User'
               },
               {name:'title',header:'Title'},
-              {name:'body',header:'Text',type:'textarea'},
+              //{name:'body',header:'Text',type:'textarea'},
           ],
           data:json,
         });

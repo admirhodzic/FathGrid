@@ -27,6 +27,7 @@ style.innerHTML = `
   .fathgrid-wrapper nav a.checked::before{content:'✓';position:absolute;left:1em;}  
 `;
 document.head.appendChild(style);
+//icons from https://icomoon.io/app/#/select
 
 ((function(win){
   win.FathGrid=function(id,_config){
@@ -96,7 +97,7 @@ document.head.appendChild(style);
     var selectRow=function(rownum){
       selected_rownum=rownum;
       (tbody.querySelectorAll(":scope tr.selected")||[]).forEach(e=>e.classList.remove("selected"));
-      tbody.querySelector(":scope tr[data-rownum='"+rownum+"']").classList.add("selected");
+      tbody.querySelector(":scope > tr[data-rownum='"+rownum+"']").classList.add("selected");
     };
     var showColumn=function(idx,bShow){
       config.columns[idx].visible=bShow;
@@ -123,9 +124,9 @@ document.head.appendChild(style);
     if(config.paginable) table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
 
     if(config.selectColumns) {
-      table.insertAdjacentHTML("beforebegin",`<nav class="fathgrid-columns-nav dropdown" id="exporter${id}"><a href="javascript:void(0)">
+      table.insertAdjacentHTML("beforebegin",`<nav class="fathgrid-columns-nav dropdown" id="columns${id}"><a href="javascript:void(0)">
         <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" ><g transform="rotate(90 16 16)"><path d="M0 0h8v8h-8zM12 2h20v4h-20zM0 12h8v8h-8zM12 14h20v4h-20zM0 24h8v8h-8zM12 26h20v4h-20z"></path></g></svg>
-        </a><div class="dropdown-content">${config.columns.map((c,idx)=>`<a class="${c.visible!==false?'checked':''}" data-i="${idx}" href="#">${c.name}</a>`).join(' ')}</div></nav>`);
+        </a><div class="dropdown-content">${config.columns.map((c,idx)=>`<a class="${c.visible!==false?'checked':''}" data-i="${idx}" href="#">${c.header||c.name}</a>`).join(' ')}</div></nav>`);
       wrapper.querySelectorAll(":scope .fathgrid-columns-nav a").forEach(x=>x.addEventListener("click",function(e){x.classList.toggle("checked");showColumn(x.dataset.i,x.classList.contains("checked"));stop(e);}));
     }
 
@@ -134,7 +135,7 @@ document.head.appendChild(style);
     </a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`);
     var paginator=table.parentElement.querySelector(`#paginator${id}`);
     var exporter=table.parentElement.querySelector(`#exporter${id}`);
-    exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
+    if(exporter!==null) exporter.querySelectorAll(":scope a").forEach(a=>{console.log(a);a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
     ("fathgrid ").split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
 
     if(data===null || totalRecords===0) table.querySelectorAll(":scope tbody tr").forEach((tr,idx) => {
@@ -568,6 +569,12 @@ document.head.appendChild(style);
       getSelectedItem:function(){return selected_rownum?data[selected_rownum-1]:null;},
       setServerURL:function(u){config.serverURL=u;render();},
       wrapperEl:wrapper,
+      showSubgrid:function(el,tt,_html=''){
+        var a=tbody.querySelectorAll(":scope tr.subgrid");
+        el.insertAdjacentHTML('afterend',`<tr class="subgrid"><td colspan="${config.columns.length}" >${_html}</td></tr>`);
+        el.nextSibling.querySelector(":scope td").appendChild(tt.wrapperEl);
+        a.forEach(x=>x.parentElement.removeChild(x))
+      },
       selectRow:selectRow,
     }
   }

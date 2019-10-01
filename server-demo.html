@@ -17,14 +17,15 @@
     <script src="fathgrid.js"></script>
 
     <style>
-      tr.selected td {background-color:cornflowerblue}
-      tr.subgrid td {background-color: #f1f1f1;}
+      tr.selected td:nth-child(1) {border-left:solid 4px cornflowerblue;}
+      tr.selected > td{background:#ddd;}
+      tr.subgrid > td {border-left:solid 4px cornflowerblue;border-bottom: solid 2px #ddd}
     </style>
 
   </head>
   <body>
       <div class="container-fluid">
-    <h1>FathGrid with server-side  data</h1>
+    <h1>FathGrid with server-side data</h1>
 
     <div style="display: flex;">
       <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
@@ -57,17 +58,14 @@
             //initialize main grid with posts data from server
             t1=FathGrid("table1",{
               serverURL:'https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}',
-              size:12,
+              size:10,
               editable:true,
               onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
               
               //this onclick function shows comments for selected post
               onClick:function(item,col,el){
                 t2.setServerURL('https://jsonplaceholder.typicode.com/comments?postId='+item.id+'&_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}');
-                
-                document.querySelectorAll("tbody tr.subgrid").forEach(x=>x.parentElement.removeChild(x));
-                el.parentElement.insertAdjacentHTML('afterend',`<tr class="subgrid"><td colspan="4" style="padding-left:4em;"><b>Comments</b></td></tr>`);
-                document.querySelector("tbody tr.subgrid td").append(t2.wrapperEl);
+                t1.showSubgrid(el.parentElement,t2,`<h4>Comments</h4>`);
               },
 
               columns:[
@@ -88,6 +86,7 @@
             t2=FathGrid("table2",{
                 filterable:false,
                 paginable:false,
+                exportable:false,
                 columns:[{name:'name'},{name:'email'},{name:'body',value:function(item){return item.body.substring(0,30)+'...';}}]
             });
 

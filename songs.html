@@ -42,7 +42,7 @@
         </table>
   </div>
   
-  <script src="demodata.js"></script>
+  <script src="songs.js"></script>
     <script>
 
 var t1=FathGrid("table1",{
@@ -52,44 +52,41 @@ var t1=FathGrid("table1",{
       sortable:true,
       showFooter:true,
       onChange:function(item,col,old,value){console.log("onChange:",item.id,col,old,value);return value==''?false:true;},
-      rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
+      rowClass:function(dr,idx){return dr.artist=='The Beatles'?'table-info':(dr.artist=="The Rolling Stones"?'table-warning':'')},
       
       //grouping
-      sortBy:[1],//group on first column
-      groupOn:item=>`${item.country}`, //group expression
-      showGroupFooter:true,
+      //sortBy:[1],//group on first column
+      //groupOn:item=>`${item.genre}`, //group expression
+      //showGroupFooter:true,
+      
       selectColumns:true,
       columns:[
-        {name:'country',header:'Country',visible:false}, //invisible grouping column
+        {name:'genre',header:'Genre',visible:false}, //invisible grouping column
         {
-          header:'ID',name:'id',
+          header:'Place',name:'id',
           editable:false,
-          groupFooter:'Country Total',
+          groupFooter:x=>`Total ${x[0].genre}`,
           footer:'Total'
         },
         {
-          header:'Name',name:'name',
+          header:'Album',name:'album',
           //listOfValues:["Abel","Ahmed"],//list of values for edit, or a function(data,col) which returns list of values
         },
         {
-          name:'email',header:'Email',
+          name:'artist',header:'Artist',
           filter:null,//array or null for auto-generation of filter list
           //editable:function(data,col,el){return data.id>3}, //is field editable
         },
         {
-          name:'dob',header:'DOB',
-          type:'date', //edit input type: text, date, email, checkbox
+          name:'year',header:'Year',
+          type:'text', //edit input type: text, date, email, checkbox
         },
-        {type:'text',editable:true,
-          name:'salary',header:'Salary',class:"text-right",
-          footer:function(data){return (data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))},
-          groupFooter:function(data){return (data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))}
-        },
-        {name:'gender',filter:['Female','Male'],header:'Gender',listOfValues:['Female','Male']},
-        {name:'active',type:'checkbox',header:'Active',filter:[{value:0,name:'No'},{value:1,name:'Yes'}]},
-        {filterable:false,editable:false,name:'photo',html:function(item){return `<img  src="https://i.pravatar.cc/32?u=${item.id}"/>`},header:'Img'},
+        {
+            header:'Search',editable:false,
+            html:(item)=>`<a href="http://google.com/search?tbm=vid&q=${item.album+' '+item.artist}">view</a>`
+        }
       ],
-      data:demodata
+      data:songs
     });
     
     </script>
