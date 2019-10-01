@@ -26,6 +26,8 @@
   <body>
       <div class="container-fluid">
     <h1>FathGrid with server-side data</h1>
+    <p>This demo uses FathGrid.serverURL to get data from server-side API (<a href="https://jsonplaceholder.typicode.com/">jsonplaceholder</a>).</p>
+    <p>When a row is selected, sub-grid is initialized with detail data.</p>
 
     <div style="display: flex;">
       <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
@@ -42,8 +44,9 @@
 
     <table  id="table1" class="table table-bordered ">       <thead class="thead-light"></thead> </table>
 
-    <table  id="table2" class="table table-bordered table-sm">       <thead class="thead-light"></thead> </table>
-
+    <div style="display: none;">
+      <table  id="table2" class="table table-bordered table-sm">       <thead class="thead-light"></thead> </table>
+    </div>
   </div>
   
     <script>

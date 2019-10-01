@@ -226,8 +226,9 @@ document.head.appendChild(style);
       return fdata.slice((config.page-1)*config.size,config.page*config.size);
     }
 
-    var renderBody=function(dd){
-
+    var _renderData=[];
+    var renderBody=function(dd=null){
+      if(dd===null) dd=_renderData; else _renderData=dd;
       [...tbody.children].forEach(x=>tbody.removeChild(x));
       if((config.page-1)*config.size >= filteredRecords) config.page=1;
 
@@ -432,9 +433,9 @@ document.head.appendChild(style);
         var old=vv(data[editinput.dataset.rownum-1],editinput.dataset.col-1);
         ss(editinput.dataset.rownum-1,editinput.dataset.col-1,newval);
         if(false!==config.onChange(data[editinput.dataset.rownum-1],editinput.dataset.col,old,newval)){
-          var td=editinput.parentElement,dr=data[editinput.dataset.rownum-1],cr=editinput.dataset.col-1,column=config.columns[cr];
           editinput.remove();editinput=undefined;
-          renderBody(data);
+          console.log(_renderData);
+          renderBody();
         }else {
           ss(editinput.dataset.rownum-1,editinput.dataset.col-1,old);
           editinput.classList.add("error");
