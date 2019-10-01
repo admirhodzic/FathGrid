@@ -46,11 +46,10 @@ document.head.appendChild(style);
         sort:[],
         columns:[],
         onRender:function(){},
-        onClick:function(data,col,el){editCell(data.rownum,col,el)},
+        onClick:function(data,col,el){editCell(data.rownum,col)},
         onChange:function(data,col,old,value){},
         rowClass:null,
         data:null,
-        editinput:undefined,
         q:'',
         loading:'Loading...',
         ..._config
@@ -97,7 +96,7 @@ document.head.appendChild(style);
     var selectRow=function(rownum){
       selected_rownum=rownum;
       (tbody.querySelectorAll(":scope tr.selected")||[]).forEach(e=>e.classList.remove("selected"));
-      tbody.querySelector(":scope > tr[data-rownum='"+rownum+"']").classList.add("selected");
+      if(null!==(x=(tbody.querySelector(":scope > tr[data-rownum='"+rownum+"']")))) x.classList.add("selected");
     };
     var showColumn=function(idx,bShow){
       config.columns[idx].visible=bShow;
@@ -135,7 +134,7 @@ document.head.appendChild(style);
     </a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`);
     var paginator=table.parentElement.querySelector(`#paginator${id}`);
     var exporter=table.parentElement.querySelector(`#exporter${id}`);
-    if(exporter!==null) exporter.querySelectorAll(":scope a").forEach(a=>{console.log(a);a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
+    if(exporter!==null) exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
     ("fathgrid ").split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
 
     if(data===null || totalRecords===0) table.querySelectorAll(":scope tbody tr").forEach((tr,idx) => {
@@ -227,99 +226,104 @@ document.head.appendChild(style);
       return fdata.slice((config.page-1)*config.size,config.page*config.size);
     }
 
+    var renderBody=function(dd){
+
+      [...tbody.children].forEach(x=>tbody.removeChild(x));
+      if((config.page-1)*config.size >= filteredRecords) config.page=1;
+
+      var lastgroup=null,gg,gtr,gtd,groupdata=[];
+      dd.forEach((dr,idx)=>{
+        
+          if(typeof config.groupOn==='function' && lastgroup!==(gg=config.groupOn(dr,idx))){
+            if(config.showGroupFooter===true && lastgroup!==null){
+              tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
+              config.columns.forEach((c,i)=>{
+                gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
+                (c.class||'').split(' ').filter(x=>x!='').forEach(c=>gtd.classList.add(c));
+                gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
+              });
+            }
+            tbody.appendChild(gtr=document.createElement("TR"));gtr.appendChild(document.createElement("TD"));
+            gtr.classList.add("group-row");
+            gtr.querySelector(":scope TD").setAttribute("colspan",config.columns.filter(x=>x.visible!==false).length);
+            gtr.querySelector(":scope TD").innerHTML=`<b>${gg}</b>`;
+            lastgroup=gg;
+            groupdata=[];
+          }
+
+          var r=document.createElement("tr");
+          r.dataset.id=dr.id;
+          r.dataset.rownum=dr.rownum;
+          if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
+          
+          config.columns.forEach((column,col)=>{
+            var c=document.createElement('td');
+            if(column.visible===false) c.style.display="none";
+            (column.class||'').split(' ').filter(x=>x!='').forEach(c1=>c.classList.add(c1));
+            var x=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[col]);
+            if(column.type=='checkbox') {
+              c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((column.editable===false ||(typeof column.editable =='function' && column.editable(dr,col+1)===false)) || config.editable==false)?'disabled':''} />`;
+              c.querySelector(":scope input[type=checkbox]").addEventListener("click",function(e){
+                config.onChange(dr,col,!e.srcElement.checked,e.srcElement.checked);
+              });
+            }
+            else if(column.html!==undefined) c.innerHTML=column.html(dr);
+            else c.innerText=x;
+            r.appendChild(c);
+
+          })
+          tbody.appendChild(r);
+          if(undefined!==config.groupOn && config.showGroupFooter===true) groupdata.push(dr);
+      });
+      //copy of code from above to draw last group footer
+      
+      if(undefined!==config.groupOn && config.showGroupFooter===true){
+        tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
+        config.columns.forEach((c,i)=>{
+          gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
+          (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>gtd.classList.add(c1));
+          gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
+        });
+        groupdata=[];
+      }
+      
+
+
+      if(config.paginable){
+        paginator.innerHTML=renderPaginator();
+        paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
+        paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
+        paginator.querySelectorAll(".lastpage").forEach(x=>{x.addEventListener('click',function(e){lastPage();stop(e);})});
+        paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
+        paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){
+          x.innerHTML=`<input id="gotopage" style="width:3em;text-align:center;" type="number" min="1" max="${(filteredRecords+config.size-1)/config.size}" value="${config.page}"/>`;
+          var gti=x.querySelector(":scope input");
+          gti.focus();
+          gti.select();
+          gti.addEventListener("change",function(e){
+            config.page=Math.max(1,parseInt(e.srcElement.value));stop(e);render()
+          })
+        })});
+      }
+
+      tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
+        selectRow(e.srcElement.parentElement.closest("TR").dataset.rownum);
+        config.onClick(data[selected_rownum-1],[...e.srcElement.parentElement.closest("TR").children].indexOf(e.srcElement.closest("TD"))+1,e.srcElement.closest("TD"));
+      })});
+
+      if(tfoot!==null){
+        tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(dd,td):config.columns[idx].footer});
+      }
+      config.onRender();            
+    
+    }
+
     var render=function(){
         table.querySelectorAll(":scope tbody tr").forEach(tr => {tr.parentNode.removeChild(tr);});
 
         tbody.innerHTML=`<tr><td colspan="${config.columns.length}">${config.loading}</td></tr>`;
         getData().then(dd=>{
-          [...tbody.children].forEach(x=>tbody.removeChild(x));
-          if((config.page-1)*config.size >= filteredRecords) config.page=1;
-
-          var lastgroup=null,gg,gtr,gtd,groupdata=[];
-          dd.forEach((dr,idx)=>{
-            
-              if(typeof config.groupOn==='function' && lastgroup!==(gg=config.groupOn(dr,idx))){
-                if(config.showGroupFooter===true && lastgroup!==null){
-                  tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
-                  config.columns.forEach((c,i)=>{
-                    gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
-                    (c.class||'').split(' ').filter(x=>x!='').forEach(c=>gtd.classList.add(c));
-                    gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
-                  });
-                }
-                tbody.appendChild(gtr=document.createElement("TR"));gtr.appendChild(document.createElement("TD"));
-                gtr.classList.add("group-row");
-                gtr.querySelector(":scope TD").setAttribute("colspan",config.columns.filter(x=>x.visible!==false).length);
-                gtr.querySelector(":scope TD").innerHTML=`<b>${gg}</b>`;
-                lastgroup=gg;
-                groupdata=[];
-              }
-  
-              var r=document.createElement("tr");
-              r.dataset.id=dr.id;
-              r.dataset.rownum=dr.rownum;
-              if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
-              
-              config.columns.forEach((column,col)=>{
-                var c=document.createElement('td');
-                if(column.visible===false) c.style.display="none";
-                (column.class||'').split(' ').filter(x=>x!='').forEach(c1=>c.classList.add(c1));
-                var x=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[col]);
-                if(column.type=='checkbox') {
-                  c.innerHTML=`<input type="checkbox" ${(x=='1'||x=='true'||x===true||x=='yes'||x=='on')?'checked':''} ${((column.editable===false ||(typeof column.editable =='function' && column.editable(dr,col+1)===false)) || config.editable==false)?'disabled':''} />`;
-                  c.querySelector(":scope input[type=checkbox]").addEventListener("click",function(e){
-                    config.onChange(dr,col,!e.srcElement.checked,e.srcElement.checked);
-                  });
-                }
-                else if(column.html!==undefined) c.innerHTML=column.html(dr);
-                else c.innerText=x;
-                r.appendChild(c);
-  
-              })
-              tbody.appendChild(r);
-              if(undefined!==config.groupOn && config.showGroupFooter===true) groupdata.push(dr);
-          });
-          //copy of code from above to draw last group footer
-          
-          if(undefined!==config.groupOn && config.showGroupFooter===true){
-            tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
-            config.columns.forEach((c,i)=>{
-              gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
-              (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>gtd.classList.add(c1));
-              gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
-            });
-            groupdata=[];
-          }
-          
-  
-  
-          if(config.paginable){
-            paginator.innerHTML=renderPaginator();
-            paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
-            paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
-            paginator.querySelectorAll(".lastpage").forEach(x=>{x.addEventListener('click',function(e){lastPage();stop(e);})});
-            paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
-            paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){
-              x.innerHTML=`<input id="gotopage" style="width:3em;text-align:center;" type="number" min="1" max="${(filteredRecords+config.size-1)/config.size}" value="${config.page}"/>`;
-              var gti=x.querySelector(":scope input");
-              gti.focus();
-              gti.select();
-              gti.addEventListener("change",function(e){
-                config.page=Math.max(1,parseInt(e.srcElement.value));stop(e);render()
-              })
-            })});
-          }
-  
-          tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
-            selectRow(e.srcElement.parentElement.closest("TR").dataset.rownum);
-            config.onClick(data[selected_rownum-1],[...e.srcElement.parentElement.closest("TR").children].indexOf(e.srcElement.closest("TD"))+1,e.srcElement.closest("TD"));
-          })});
-  
-          if(tfoot!==null){
-            tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(dd,td):config.columns[idx].footer});
-          }
-          config.onRender();            
-  
+          renderBody(dd);
         });
 
     };
@@ -392,8 +396,32 @@ document.head.appendChild(style);
     var stop=function(e){e.preventDefault();e.stopPropagation();};
     var isChecked=function(v){return v=='yes'||v=='true'||v===true||v=='on'||v==1||v=='1';};
 
-    var editCell=function(rownum,col,el){
-      console.log("edit",rownum,col,el);
+    var editNext=function(rownum,col){
+      var r=rownum,c=col;
+      while(undefined!==data[rownum-1]){
+        col++;
+        var column=config.columns[col-1];
+        if((undefined!==column && (column.editable!==false || ((typeof column.editable ==="function") && column.editable(data[rownum-1],col)!==false)) && (column.type!=='checkbox'))) {
+          return editCell(rownum,col);
+        }
+        if(col>config.columns.length) {col=0;rownum++;}
+      }
+      editCell(r,c);
+    }
+    var editPrev=function(rownum,col){
+      var r=rownum,c=col;
+      while(undefined!==data[rownum-1]){
+        col--;
+        if(col<1) {col=config.columns.length+1;rownum--;}
+        var column=config.columns[col-1];
+        if((undefined!==column && (column.editable!==false || ((typeof column.editable ==="function") && column.editable(data[rownum-1],col)!==false)) && (column.type!=='checkbox'))) {
+          return editCell(rownum,col);
+        }
+      }
+      editCell(r,c);
+    }
+
+    var editCell=function(rownum,col){
       if(!config.editable) return;
 
       if(editinput!==undefined) {
@@ -406,8 +434,7 @@ document.head.appendChild(style);
         if(false!==config.onChange(data[editinput.dataset.rownum-1],editinput.dataset.col,old,newval)){
           var td=editinput.parentElement,dr=data[editinput.dataset.rownum-1],cr=editinput.dataset.col-1,column=config.columns[cr];
           editinput.remove();editinput=undefined;
-          if(column.html!==undefined) td.innerHTML=column.html(dr);
-          else td.innerText=column.value!==undefined?(column.value(dr)):(column.name!==undefined?dr[column.name]:dr[cr]);
+          renderBody(data);
         }else {
           ss(editinput.dataset.rownum-1,editinput.dataset.col-1,old);
           editinput.classList.add("error");
@@ -416,10 +443,13 @@ document.head.appendChild(style);
       }
       
       var column=config.columns[col-1];
-      if(undefined!==column && (column.editable===false || ((typeof column.editable ==="function") && column.editable(data[rownum-1],col,el)===false))) return;
+      if(undefined!==column && (column.editable===false || ((typeof column.editable ==="function") && column.editable(data[rownum-1],col)===false))) return;
       if(column.type==='checkbox') return;
+      
+
       var coltype=(undefined!==column && undefined!==column.type)?(column.type):'text';
-      var t=el.innerText;
+      var t=vv(data[rownum-1],col-1);
+      var el=tbody.querySelector(":scope > tr[data-rownum='"+rownum+"'] td:nth-child("+col+")");
       var i=null;
       if(undefined!==column && column.listOfValues!==undefined){
         el.innerHTML=`<select style="width:100%;" id="coledit"  ></select>`;
@@ -438,6 +468,7 @@ document.head.appendChild(style);
         i.focus();
         i.select();
       }
+      
       i.addEventListener("click",function(ev){ev.stopPropagation();});
       i.dataset.originalvalue=t;i.dataset.rownum=rownum;i.dataset.col=col;
 
@@ -451,31 +482,31 @@ document.head.appendChild(style);
           case 38://up
             if([...el.parentElement.parentElement.children].indexOf(el.parentElement) > 0) {
               stop(e);
-              editCell(rownum-1,col,el.parentElement.previousSibling.querySelector("td:nth-child("+col+")"));
+              editCell(rownum-1,col);
             }
             break;
           case 40://down
             if(el.parentElement.nextSibling!==null) {
               stop(e);
-              editCell(rownum+1,col,el.parentElement.nextSibling.querySelector("td:nth-child("+col+")"));
+              editCell(rownum+1,col);
             }
             break;
           case 37://left
-            if(e.shiftKey && [...el.parentElement.children].indexOf(el) > 0) {
+            if(e.shiftKey) {
               stop(e);
-              editCell(rownum,col-1,el.previousSibling);
+              editPrev(rownum,col);
             }
             break;
           case 13: case 9:
             if(el.nextSibling!==null) {
               stop(e);
-              editCell(rownum,col+1,el.nextSibling);
+              editNext(rownum,col);
             }
             break;
           case 39://right
             if(e.shiftKey && el.nextSibling!==null) {
               stop(e);
-              editCell(rownum,col+1,el.nextSibling);
+              editNext(rownum,col);
             }
             break;
         }
@@ -576,6 +607,8 @@ document.head.appendChild(style);
         a.forEach(x=>x.parentElement.removeChild(x))
       },
       selectRow:selectRow,
+      insertRow:function(rownum,item){ if(rownum===null) rownum=data.length+1;;data.splice(rownum-1,0,item);data.map((x,idx)=>{x.rownum=idx+1;return x;});render()},
+      deleteRow:function(rownum){ data.splice(rownum-1,1);data.map((item,idx)=>{item.rownum=idx+1;return item;});render()},
     }
   }
 })(typeof window !== "undefined" ? window : this));

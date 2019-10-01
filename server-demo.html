@@ -77,7 +77,7 @@
                     header:'User'
                   },
                   {name:'title',header:'Title'},
-                  {name:'body',header:'Text',type:'textarea'},
+                  {name:'body',header:'Text',type:'textarea', value:(item)=>`${item.body.substring(0,30)+'...'}`},
               ],
             });
 

@@ -153,7 +153,7 @@ To add filter values to column 5, and let grid fill in values for filter of colu
         },
         {
           filter:null, //array or null for auto-generation of filter list
-          editable:function(data,col,el){return data.rownum>3}, //is field editable
+          editable:function(data,col){return data.rownum>3}, //is field editable
         },
         {
           type:'text', //edit input type: text, date, email, checkbox, textarea
@@ -197,6 +197,10 @@ To enable PDF export, include jsPDF.js in your page and PDF export functionality
   .search([query string]) //instant search in all columns. Calling this method without argument returns current search string.
 
   .getSelectedItem() //return data item of selected row or null if no row is selected
+
+  .deleteRow(rownum) //deletes row specified by rownum parameter (1 = first row, 2= second row, ...)
+
+  .insertRow(rownum, item) //inserts new item into row number specified by rownum parameter (1=first row)
 
   
  
