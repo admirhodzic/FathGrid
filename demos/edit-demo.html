@@ -14,11 +14,11 @@
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
 
 
-    <script src="fathgrid.js"></script>
+    <script src="../fathgrid.js"></script>
   </head>
   <body>
       <div class="container-fluid">
-    <h1>FathGrid with inline data</h1>
+    <h1>FathGrid edit with inline data</h1>
 
     <div style="display: flex;">
       <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
@@ -34,55 +34,47 @@
     </div>
 
     
+    
     <table  id="table1" class="table table-hover table-bordered ">
-      <thead class="thead-light">
-      </thead>
-      <tbody>
-      </tbody>
-        </table>
+      <thead class="thead-light">    </thead>
+      <tbody>    </tbody>
+    </table>
+
+    <button onclick="localStorage.setItem('table1',JSON.stringify(t1.getData()))">Save data</button> 
+    <button onclick="t1.setData(JSON.parse(localStorage.getItem('table1')))">Load data</button>
+    <i>Save / Load data from localStorage</i>
   </div>
   
-  <script src="songs.js"></script>
+  
     <script>
+
+
+var demodata=[
+  ['100','Service title 100', 2, 134],
+  ['120','Some stuff', 10, 160],
+  ['310','Goods', 5, 2000],
+];
+
 
 var t1=FathGrid("table1",{
       size:10,
       editable:true,
       filterable:true,
       sortable:true,
-      onChange:function(item,col,old,value){console.log("onChange:",item.id,col,old,value);return value==''?false:true;},
-      rowClass:function(dr,idx){return dr.artist=='The Beatles'?'table-info':(dr.artist=="The Rolling Stones"?'table-warning':'')},
-      
-      //grouping
-      //sortBy:[1],//group on first column
-      //groupOn:item=>`${item.genre}`, //group expression
-      //showGroupFooter:true,
-      
-      selectColumns:true,
+      showFooter:true,
+      onChange:function(item,col,old,value){console.log("onChange:",item,col,old,value);return value==''?false:true;},
       columns:[
-        {name:'genre',header:'Genre',visible:false}, //invisible grouping column
-        {
-          header:'Place',name:'id',
+        {header:'Code',pattern:'[0-9]{1,10}',title:'Must be numeric',footer:`<button class="btn btn-secondary" onclick="t1.insertRow(null,['','',0,0])">Add row</button>`},
+        {header:'Title'},
+        {header:'Qty'},
+        {header:'Price',footer:'Total'},
+        {header:'Item Total',editable:false,
+          value:(x)=>`${(parseFloat(x[2]||0)*parseFloat(x[3]||0)).toFixed(2)}`,
+          footer:(data,el)=>data.map(x=>(parseFloat(x[2]||0)*parseFloat(x[3]||0))).reduce((x,s)=>x+s,0).toFixed(2)
         },
-        {
-          header:'Album',name:'album',
-          //listOfValues:["Abel","Ahmed"],//list of values for edit, or a function(data,col) which returns list of values
-        },
-        {
-          name:'artist',header:'Artist',
-          filter:null,//array or null for auto-generation of filter list
-          //editable:function(data,col){return data.id>3}, //is field editable
-        },
-        {
-          name:'year',header:'Year',
-          type:'text', //edit input type: text, date, email, checkbox
-        },
-        {
-            header:'Search',editable:false,
-            html:(item)=>`<a href="http://google.com/search?tbm=vid&q=${item.album+' '+item.artist}">view</a>`
-        }
+        {header:' ',filterable:false,editable:false,html:x=>`<a href="#" class="btn btn-danger btn-sm" onclick="t1.deleteRow(${x.rownum});return false;">&#x2717;</a>`}
       ],
-      data:songs
+      data:demodata
     });
     
     </script>
