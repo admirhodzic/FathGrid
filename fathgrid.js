@@ -38,11 +38,13 @@ document.head.appendChild(style);
         editable:false,
         filterable:true,
         sortable:true,
-        paginable:true,
+        pageable:true,
         exportable:true,
         showFooter:false,
         selectColumns:false,
         showGroupFooter:false,
+        onInitFilter:function(el){},
+        onInitTable:function(el){},
         sort:[],
         columns:[],
         onRender:function(){},
@@ -114,7 +116,7 @@ document.head.appendChild(style);
     table.parentNode.insertBefore(wrapper,table);
     wrapper.appendChild(table);
 
-    if(config.paginable) table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
+    if(config.pageable) table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
 
     if(config.selectColumns) {
       table.insertAdjacentHTML("beforebegin",`<nav class="fathgrid-columns-nav dropdown" id="columns${id}"><a href="javascript:void(0)">
@@ -284,7 +286,7 @@ document.head.appendChild(style);
       
 
 
-      if(config.paginable){
+      if(config.pageable){
         paginator.innerHTML=renderPaginator();
         paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
         paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
@@ -309,7 +311,8 @@ document.head.appendChild(style);
       if(tfoot!==null){
         tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(dd,td):config.columns[idx].footer});
       }
-      config.onRender();            
+      config.onRender();
+      config.onInitTable(tbody);
     
     }
 
@@ -390,6 +393,7 @@ document.head.appendChild(style);
         });
         thead.append(r);
         r.querySelectorAll(":scope input, select").forEach(i=>{i.addEventListener("change",function(e){render();});});
+        config.onInitFilter(r);
     }
 
 
@@ -599,8 +603,9 @@ document.head.appendChild(style);
       getSelectedItem:function(){return selected_rownum?data[selected_rownum-1]:null;},
       setServerURL:function(u){config.serverURL=u;render();},
       wrapperEl:wrapper,
-      showSubgrid:function(el,tt,_html=''){
+      showSubgrid:function(tt,_html=''){
         var a=tbody.querySelectorAll(":scope tr.subgrid");
+        var el=tbody.querySelector(":scope > tr.selected");
         el.insertAdjacentHTML('afterend',`<tr class="subgrid"><td colspan="${config.columns.length}" >${_html}</td></tr>`);
         el.nextSibling.querySelector(":scope td").appendChild(tt.wrapperEl);
         a.forEach(x=>x.parentElement.removeChild(x))

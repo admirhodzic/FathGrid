@@ -104,7 +104,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>page</td><td>page number to show</td><td>1</td></tr>
 <tr><td>filterable</td><td>show filter row in thead</td><td>true</td></tr>
 <tr><td>editable</td><td>allow edits</td><td>true</td></tr>
-<tr><td>paginable</td><td>allow pagination</td><td>true</td></tr>
+<tr><td>pageable</td><td>allow pagination</td><td>true</td></tr>
 <tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
 <tr><td>showFooter</td><td>add footer row to table</td><td>false</td></tr>
 <tr><td>showGroupFooter</td><td>add footer row after each group of records</td><td>false</td></tr>

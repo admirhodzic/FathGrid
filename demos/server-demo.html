@@ -68,7 +68,7 @@
               //this onclick function shows comments for selected post
               onClick:function(item,col,el){
                 t2.setServerURL('https://jsonplaceholder.typicode.com/comments?postId='+item.id+'&_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}');
-                t1.showSubgrid(el.parentElement,t2,`<h4>Comments</h4>`);
+                t1.showSubgrid(t2,`<h4>Comments</h4>`);
               },
 
               columns:[
@@ -88,7 +88,7 @@
             //init subgrid for comments
             t2=FathGrid("table2",{
                 filterable:false,
-                paginable:false,
+                pageable:false,
                 exportable:false,
                 columns:[{name:'name'},{name:'email'},{name:'body',value:function(item){return item.body.substring(0,30)+'...';}}]
             });
