@@ -117,6 +117,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>serverURL</td><td>templated string URL for data retrieval</td><td>undefined</td></tr>
 <tr><td>loading</td><td>message to show while loading data from server</td><td>Loading...</td></tr>
 <tr><td>selectColumns</td><td>enable column show/hide tool</td><td>false</td></tr>
+<tr><td>template</td><td>Templated HTML string for grid wrapper element. Use this to insert custom HTML between grid elements.</td><td>'{tools}{info}{table}{pager}'</td></tr>
 </tbody>
 </table>
 

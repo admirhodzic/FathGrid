@@ -154,17 +154,17 @@ document.head.appendChild(style);
         </a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`
         :''}
       `,
-      info:(config.pageable)?`<div id="pageinfo${id}">`+renderPageinfo()+`</div>`:'',
+      info:(config.pageable)?`<div class="pageinfo${id}">`+renderPageinfo()+`</div>`:'',
       table:`<div id="table-container${id}"></div>`,
-      pager:(config.pageable)?`<nav id="paginator${id}">`+renderPaginator()+'</nav>':''
+      pager:(config.pageable)?`<nav class="paginator${id}">`+renderPaginator()+'</nav>':''
     };
     wrapper.innerHTML=config.template.replace(/{(\w+)}/g, (x, y) => parts[y]);        
     wrapper.querySelector(":scope #table-container"+id).appendChild(table);
     wrapper.querySelectorAll(":scope .fathgrid-columns-nav a").forEach(x=>x.addEventListener("click",function(e){x.classList.toggle("checked");showColumn(x.dataset.i,x.classList.contains("checked"));stop(e);}));
 
 
-    var pageinfo=wrapper.querySelector(`#pageinfo${id}`);
-    var paginator=wrapper.querySelector(`#paginator${id}`);
+    var pageinfos=wrapper.querySelectorAll(`:scope .pageinfo${id}`);
+    var paginators=wrapper.querySelectorAll(`:scope .paginator${id}`);
     var exporter=wrapper.querySelector(`#exporter${id}`);
     if(exporter!==null) exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
     ("fathgrid ").split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
@@ -322,21 +322,23 @@ document.head.appendChild(style);
 
 
       if(config.pageable){
-        pageinfo.innerHTML=renderPageinfo();
-        paginator.innerHTML=renderPaginator();
-        paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
-        paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
-        paginator.querySelectorAll(".lastpage").forEach(x=>{x.addEventListener('click',function(e){lastPage();stop(e);})});
-        paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
-        paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){
-          x.innerHTML=`<input id="gotopage" style="width:3em;text-align:center;" type="number" min="1" max="${(filteredRecords+config.size-1)/config.size}" value="${config.page}"/>`;
-          var gti=x.querySelector(":scope input");
-          gti.focus();
-          gti.select();
-          gti.addEventListener("change",function(e){
-            config.page=Math.max(1,parseInt(e.srcElement.value));stop(e);render()
-          })
-        })});
+        pageinfos.forEach(pageinfo=>pageinfo.innerHTML=renderPageinfo());
+        paginators.forEach(paginator=>{
+          paginator.innerHTML=renderPaginator();
+          paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
+          paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
+          paginator.querySelectorAll(".lastpage").forEach(x=>{x.addEventListener('click',function(e){lastPage();stop(e);})});
+          paginator.querySelectorAll(".firstpage").forEach(x=>{x.addEventListener('click',function(e){firstPage();stop(e);})});
+          paginator.querySelectorAll(".gotopage").forEach(x=>{x.addEventListener('click',function(e){
+            x.innerHTML=`<input id="gotopage" style="width:3em;text-align:center;" type="number" min="1" max="${(filteredRecords+config.size-1)/config.size}" value="${config.page}"/>`;
+            var gti=x.querySelector(":scope input");
+            gti.focus();
+            gti.select();
+            gti.addEventListener("change",function(e){
+              config.page=Math.max(1,parseInt(e.srcElement.value));stop(e);render()
+            })
+          })});
+        });
       }
 
       tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
