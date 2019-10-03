@@ -565,7 +565,7 @@ document.head.appendChild(style);
     var getExportData=function(fmt){
       var ret="";
       if(fmt=="txt") data.forEach(r=>{ret+="\n";Object.keys(r).forEach(k=>{ret+=r[k]+"\t"})});
-      if(fmt=="csv") {ret+="sep=,\n";data.forEach(r=>{Object.keys(r).forEach(k=>{ret+="\""+r[k].replace("\"","\\\"")+"\","});ret+="\n";});}
+      if(fmt=="csv") {ret+="sep=,\n";data.forEach(r=>{Object.keys(r).forEach(k=>{ret+="\""+(''+r[k]).replace("\"","\\\"")+"\","});ret+="\n";});}
       if(fmt=="html" || fmt=='xls') {ret+="<table><tbody>"+data.map(r=>{return "<tr>"+Object.keys(r).map(k=>{return "<td>"+r[k]+"</td>"}).join('')+"</tr>";}).join('')+"</tbody></table>";}
       if(fmt=='xls'){
         const TEMPLATE_XLS = `
