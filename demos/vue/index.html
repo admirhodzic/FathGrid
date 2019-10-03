@@ -1,0 +1,39 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+</head>
+<script src="https://unpkg.com/vue"></script>
+<script src="../../fathgrid.js"></script>
+
+<div id="app">
+  <p>{{ message }}</p>
+
+  <grid id="table1" v-bind:dd="data"></grid>
+</div>
+<script>
+
+
+Vue.component('grid', {
+    props:['id','dd'],
+  template: '<table class="table" :id="id"></table>',
+  created: function () {
+    this.$nextTick(function () {
+        var t1=FathGrid(this.id,{data:this.dd,columns:[{header:'a'},{header:'b'},{header:'c'}]});
+    })
+    }
+})
+
+
+new Vue({
+  el: '#app',
+  data: {
+    message: 'Hello Vue.js!',
+    data:[[11,22,33],[44,55,66],[77,88,99]],
+  }
+})
+
+</script>

@@ -50,7 +50,7 @@
   
   <script src="data/songs.js"></script>
     <script>
-
+//create HTML table contents
 songs.forEach(x=>document.querySelector("#table1 tbody").innerHTML+=`<tr><td>${x.genre}</td><td>${x.id}</td><td>${x.album}</td><td>${x.artist}</td><td>${x.year}</td></tr>`);
 
 var t1=null;
@@ -62,17 +62,18 @@ function makeGrid(){
       filterable:true,
       sortable:true,
       onChange:function(item,col,old,value){console.log("onChange:",item.id,col,old,value);return value==''?false:true;},
-      rowClass:function(dr,idx){return dr.artist=='The Beatles'?'table-info':(dr.artist=="The Rolling Stones"?'table-warning':'')},
+      rowClass:function(dr,idx){return dr[3]=='The Beatles'?'table-info':(dr[3]=="The Rolling Stones"?'table-warning':'')},
       
       //grouping
       //sortBy:[1],//group on first column
-      //groupOn:item=>`${item.genre}`, //group expression
+      //groupOn:item=>`${item[0]}`, //group expression
       //showGroupFooter:true,
       
       selectColumns:true,
       columns:[
         {visible:false}, //invisible grouping column
         {
+          groupFooter:(data)=>`${data.length} songs`,
         },
         {
         },

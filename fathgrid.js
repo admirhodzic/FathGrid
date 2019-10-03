@@ -6,7 +6,8 @@ style.innerHTML = `
   .fathgrid th.sorted-desc::after {content:"▼";position:absolute;right: 1em;}
   .fathgrid-export-nav, .fathgrid-columns-nav {float:right;}
   .fathgrid-wrapper {position:relative;}
-  .fathgrid-wrapper .page-info {position:absolute;top:0}
+  .fathgrid-wrapper .page-info {}
+  
   .fathgrid-wrapper .dropdown {    position: relative;    display: inline-block;  }
   .fathgrid-wrapper .dropdown-content {
     display: none;
@@ -25,6 +26,26 @@ style.innerHTML = `
   .fathgrid-wrapper input, .fathgrid-wrapper textarea , .fathgrid-wrapper select {border:0;}
 
   .fathgrid-wrapper nav a.checked::before{content:'✓';position:absolute;left:1em;}  
+
+  .fathgrid-wrapper .pagination {
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+    display: flex;
+    list-style:none;
+    padding-inline-start:0;
+  }
+  .fathgrid-wrapper .page-link:hover {  background:#eee;}
+  .fathgrid-wrapper .page-link {
+    position: relative;
+    color: #007bff;
+    display: block;
+    padding: 4px 8px;
+    margin-left: -1px;
+    line-height: 1.4em;
+    border: 1px solid #ddd;
+    text-decoration:none;
+  }
+  
+  
 `;
 document.head.appendChild(style);
 //icons from https://icomoon.io/app/#/select
@@ -54,6 +75,7 @@ document.head.appendChild(style);
         data:null,
         q:'',
         loading:'Loading...',
+        template:'{tools}{info}{table}{pager}',
         ..._config
     };
     var selected_rownum=null, totalRecords=0, filteredRecords=0;
@@ -71,6 +93,9 @@ document.head.appendChild(style);
     
     var editinput=undefined;
 
+    var renderPageinfo=function(){
+      return `<span class="page-info">${(config.page-1)*config.size}-${Math.min(filteredRecords,config.page*config.size)} of ${totalRecords!=filteredRecords?`${filteredRecords}/ `:''} ${totalRecords}</span>`;
+    }
     var renderPaginator=function(){
       return `
         <ul class="pagination" >
@@ -79,7 +104,7 @@ document.head.appendChild(style);
           <li class="page-item active"><a class="page-link gotopage" title="Goto page" href="javascript:void(0)">${config.page} / ${Math.floor((filteredRecords+(config.size-1))/config.size)}</a></li>
           <li class="page-item"><a class="page-link nextpage" title="Next" href="#">&#x23f5;</a></li>
           <li class="page-item"><a class="page-link lastpage" title="Last" href="#">&#x23f5;&#x2503;</a></li>
-        </ul><span class="page-info">${(config.page-1)*config.size}-${Math.min(filteredRecords,config.page*config.size)} of ${totalRecords!=filteredRecords?`${filteredRecords}/ `:''} ${totalRecords}</span>
+        </ul>
       `;
     }
     var nextPage=function(){config.page=Math.floor(Math.min(config.page+1,(filteredRecords+config.size-1)/config.size));render();};
@@ -114,25 +139,36 @@ document.head.appendChild(style);
 
     var wrapper=this.document.createElement("DIV");wrapper.classList.add("fathgrid-wrapper");
     table.parentNode.insertBefore(wrapper,table);
-    wrapper.appendChild(table);
 
-    if(config.pageable) table.insertAdjacentHTML('afterend', `<nav id="paginator${id}">`+renderPaginator()+'</nav>');
+    thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={};if(th.innerText==='')th.innerText=config.columns[i].header||config.columns[i].name; else config.columns[i].header=th.innerText;});
 
-    if(config.selectColumns) {
-      table.insertAdjacentHTML("beforebegin",`<nav class="fathgrid-columns-nav dropdown" id="columns${id}"><a href="javascript:void(0)">
+
+    const parts={
+      tools:`
+      ${config.selectColumns?`<nav class="fathgrid-columns-nav dropdown" id="columns${id}"><a href="javascript:void(0)">
         <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" ><g transform="rotate(90 16 16)"><path d="M0 0h8v8h-8zM12 2h20v4h-20zM0 12h8v8h-8zM12 14h20v4h-20zM0 24h8v8h-8zM12 26h20v4h-20z"></path></g></svg>
-        </a><div class="dropdown-content">${config.columns.map((c,idx)=>`<a class="${c.visible!==false?'checked':''}" data-i="${idx}" href="#">${c.header||c.name}</a>`).join(' ')}</div></nav>`);
-      wrapper.querySelectorAll(":scope .fathgrid-columns-nav a").forEach(x=>x.addEventListener("click",function(e){x.classList.toggle("checked");showColumn(x.dataset.i,x.classList.contains("checked"));stop(e);}));
-    }
+        </a><div class="dropdown-content">${config.columns.map((c,idx)=>`<a class="${c.visible!==false?'checked':''}" data-i="${idx}" href="#">${c.header||c.name}</a>`).join(' ')}</div></nav>`
+        :''}
+      ${config.exportable?`<nav class="fathgrid-export-nav dropdown" id="exporter${id}"><a href="javascript:void(0)">
+        <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" ><path d="M23 14l-8 8-8-8h5v-12h6v12zM15 22h-15v8h30v-8h-15zM28 26h-4v-2h4v2z"></path></svg>
+        </a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`
+        :''}
+      `,
+      info:(config.pageable)?`<div id="pageinfo${id}">`+renderPageinfo()+`</div>`:'',
+      table:`<div id="table-container${id}"></div>`,
+      pager:(config.pageable)?`<nav id="paginator${id}">`+renderPaginator()+'</nav>':''
+    };
+    wrapper.innerHTML=config.template.replace(/{(\w+)}/g, (x, y) => parts[y]);        
+    wrapper.querySelector(":scope #table-container"+id).appendChild(table);
+    wrapper.querySelectorAll(":scope .fathgrid-columns-nav a").forEach(x=>x.addEventListener("click",function(e){x.classList.toggle("checked");showColumn(x.dataset.i,x.classList.contains("checked"));stop(e);}));
 
-    if(config.exportable) table.insertAdjacentHTML('beforeBegin', `<nav class="fathgrid-export-nav dropdown" id="exporter${id}"><a href="javascript:void(0)">
-    <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" ><path d="M23 14l-8 8-8-8h5v-12h6v12zM15 22h-15v8h30v-8h-15zM28 26h-4v-2h4v2z"></path></svg>
-    </a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`);
-    var paginator=table.parentElement.querySelector(`#paginator${id}`);
-    var exporter=table.parentElement.querySelector(`#exporter${id}`);
+
+    var pageinfo=wrapper.querySelector(`#pageinfo${id}`);
+    var paginator=wrapper.querySelector(`#paginator${id}`);
+    var exporter=wrapper.querySelector(`#exporter${id}`);
     if(exporter!==null) exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
     ("fathgrid ").split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
-
+    
     if(data===null || totalRecords===0) table.querySelectorAll(":scope tbody tr").forEach((tr,idx) => {
       var row=[];
       tr.querySelectorAll(":scope td").forEach(td => {
@@ -227,7 +263,6 @@ document.head.appendChild(style);
       if(dd===null) dd=_renderData; else _renderData=dd;
       [...tbody.children].forEach(x=>tbody.removeChild(x));
       if((config.page-1)*config.size >= filteredRecords) config.page=1;
-
       var lastgroup=null,gg,gtr,gtd,groupdata=[];
       dd.forEach((dr,idx)=>{
         
@@ -287,6 +322,7 @@ document.head.appendChild(style);
 
 
       if(config.pageable){
+        pageinfo.innerHTML=renderPageinfo();
         paginator.innerHTML=renderPaginator();
         paginator.querySelectorAll(".nextpage").forEach(x=>{x.addEventListener('click',function(e){nextPage();stop(e);})});
         paginator.querySelectorAll(".prevpage").forEach(x=>{x.addEventListener('click',function(e){prevPage();stop(e);})});
@@ -318,11 +354,9 @@ document.head.appendChild(style);
 
     var render=function(){
         table.querySelectorAll(":scope tbody tr").forEach(tr => {tr.parentNode.removeChild(tr);});
-
         tbody.innerHTML=`<tr><td colspan="${config.columns.length}">${config.loading}</td></tr>`;
-        getData().then(dd=>{
-          renderBody(dd);
-        });
+        getData().then(dd=>{          renderBody(dd);        });
+        
 
     };
     var sort=function(i,desc,multisort,wantRender){
@@ -354,7 +388,6 @@ document.head.appendChild(style);
       if(wantRender!==false) render();
     };
 
-    thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={};if(th.innerText==='')th.innerText=config.columns[i].header||config.columns[i].name; else config.columns[i].header=th.innerText;});
     thead.innerHTML='';
     if(thead.querySelectorAll(":scope th").length===0) {
       var tr=document.createElement("TR");
