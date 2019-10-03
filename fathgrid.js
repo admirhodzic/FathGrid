@@ -4,7 +4,7 @@ style.innerHTML = `
   .fathgrid th.sorted, th.sorted-desc {position: relative;}
   .fathgrid th.sorted::after {content:"▲";position:absolute;right: 1em;}
   .fathgrid th.sorted-desc::after {content:"▼";position:absolute;right: 1em;}
-  .fathgrid-export-nav, .fathgrid-columns-nav {float:right;}
+  .fathgrid-export-nav, .fathgrid-columns-nav, .fathgrid-graph-nav {float:right;}
   .fathgrid-wrapper {position:relative;}
   .fathgrid-wrapper .page-info {}
   
@@ -45,7 +45,7 @@ style.innerHTML = `
     text-decoration:none;
   }
   
-  
+  .fathgrid-wrapper .graphplaceholder  {box-shadow:5px 5px 5px #777;z-index:100;position:absolute;background:white;display:none;transition-duration:0.4s;width:100%;border:solid 1px #999;padding:1em;}
 `;
 document.head.appendChild(style);
 //icons from https://icomoon.io/app/#/select
@@ -61,6 +61,9 @@ document.head.appendChild(style);
         sortable:true,
         pageable:true,
         exportable:true,
+        
+        graphType:'line',
+        graphValues:this.undefined,
         showFooter:false,
         selectColumns:false,
         showGroupFooter:false,
@@ -75,7 +78,7 @@ document.head.appendChild(style);
         data:null,
         q:'',
         loading:'Loading...',
-        template:'{tools}{info}{table}{pager}',
+        template:'{graph}{tools}{info}{table}{pager}',
         ..._config
     };
     var selected_rownum=null, totalRecords=0, filteredRecords=0;
@@ -144,7 +147,13 @@ document.head.appendChild(style);
 
 
     const parts={
+      graph:`<div class="graphplaceholder"><button style="float:right;" onclick="this.parentElement.style.display='none'">&times;</button><canvas style="width:100%;height:400px;" ></canvas></div>`,
       tools:`
+      ${config.graphValues!==undefined && typeof Chart=='function'?`<nav class="fathgrid-graph-nav dropdown" id="graphs${id}"><a href="javascript:void(0)" title="Show graph">
+        <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" >
+        <path d="M4 28h28v4h-32v-32h4zM9 26c-1.657 0-3-1.343-3-3s1.343-3 3-3c0.088 0 0.176 0.005 0.262 0.012l3.225-5.375c-0.307-0.471-0.487-1.033-0.487-1.638 0-1.657 1.343-3 3-3s3 1.343 3 3c0 0.604-0.179 1.167-0.487 1.638l3.225 5.375c0.086-0.007 0.174-0.012 0.262-0.012 0.067 0 0.133 0.003 0.198 0.007l5.324-9.316c-0.329-0.482-0.522-1.064-0.522-1.691 0-1.657 1.343-3 3-3s3 1.343 3 3c0 1.657-1.343 3-3 3-0.067 0-0.133-0.003-0.198-0.007l-5.324 9.316c0.329 0.481 0.522 1.064 0.522 1.691 0 1.657-1.343 3-3 3s-3-1.343-3-3c0-0.604 0.179-1.167 0.487-1.638l-3.225-5.375c-0.086 0.007-0.174 0.012-0.262 0.012s-0.176-0.005-0.262-0.012l-3.225 5.375c0.307 0.471 0.487 1.033 0.487 1.637 0 1.657-1.343 3-3 3z"></path></svg>
+        </a></nav>
+        `:''}
       ${config.selectColumns?`<nav class="fathgrid-columns-nav dropdown" id="columns${id}"><a href="javascript:void(0)">
         <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" ><g transform="rotate(90 16 16)"><path d="M0 0h8v8h-8zM12 2h20v4h-20zM0 12h8v8h-8zM12 14h20v4h-20zM0 24h8v8h-8zM12 26h20v4h-20z"></path></g></svg>
         </a><div class="dropdown-content">${config.columns.map((c,idx)=>`<a class="${c.visible!==false?'checked':''}" data-i="${idx}" href="#">${c.header||c.name}</a>`).join(' ')}</div></nav>`
@@ -161,6 +170,7 @@ document.head.appendChild(style);
     wrapper.innerHTML=config.template.replace(/{(\w+)}/g, (x, y) => parts[y]);        
     wrapper.querySelector(":scope #table-container"+id).appendChild(table);
     wrapper.querySelectorAll(":scope .fathgrid-columns-nav a").forEach(x=>x.addEventListener("click",function(e){x.classList.toggle("checked");showColumn(x.dataset.i,x.classList.contains("checked"));stop(e);}));
+    wrapper.querySelectorAll(":scope .fathgrid-graph-nav a").forEach(x=>x.addEventListener("click",function(e){showGraph();stop(e);}));
 
 
     var pageinfos=wrapper.querySelectorAll(`:scope .pageinfo${id}`);
@@ -612,6 +622,45 @@ document.head.appendChild(style);
         return doc;
       }
       return ret;
+    }
+
+
+    var showGraph=function(){
+      var dd=config.graphValues(data);
+      var ctx=wrapper.querySelector(":scope .graphplaceholder canvas");
+      if(wrapper.querySelector(":scope .graphplaceholder").style.display=='block') {wrapper.querySelector(":scope .graphplaceholder").style.display='none';return;}
+      wrapper.querySelector(":scope .graphplaceholder").style.display='block';
+      const colors=[
+        'rgb(54, 162, 235)',
+        'rgb(255, 99, 132)',
+         'rgb(255, 159, 64)',
+         'rgb(255, 205, 86)',
+         'rgb(153, 102, 255)',
+         'rgb(75, 192, 192)',
+         'rgb(201, 203, 207)'
+      ];var ci=0;
+      var myChart = new Chart(ctx, {
+        type: config.graphType,
+        data: {
+            labels: dd.labels,
+            datasets: Array.isArray(dd.values[0])?dd.values.map((x,idx)=>({label:dd.title[idx],data:x,borderWidth:1,backgroundColor: colors[ci],borderColor: colors[ci++],fill:false})):[{
+              label: dd.title,
+              data: dd.values,
+              borderWidth: 1,
+              backgroundColor: colors[ci],borderColor: colors[ci++],
+          }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+      });
+  
     }
 
     render();

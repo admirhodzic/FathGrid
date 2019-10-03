@@ -13,6 +13,8 @@
     <!-- add jsPdf to enable PDF export -->
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
 
+    <!-- add chart.js to enable charting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 
     <script src="../fathgrid.js"></script>
   </head>
@@ -74,7 +76,11 @@ var t1=FathGrid("table1",{
         },
         {header:' ',filterable:false,editable:false,html:x=>`<a href="#" class="btn btn-danger btn-sm" onclick="t1.deleteRow(${x.rownum});return false;">&#x2717;</a>`}
       ],
-      data:demodata
+      data:demodata,
+
+      graphValues:(data)=>({title:'Item amounts',labels:data.map(x=>x[1]),values:data.map(item=>item[3]*item[2])}),
+      graphType:'bar',
+
     });
     
     </script>
