@@ -64,7 +64,7 @@ var t1=FathGrid("table1",{
         {
           header:'ID',name:'id',
           editable:false,
-          groupFooter:'Country Total',
+          groupFooter:(data)=>`Country Total ${data[0].country}`,
           footer:'Total'
         },
         {

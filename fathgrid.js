@@ -5,7 +5,7 @@ style.innerHTML = `
   .fathgrid th.sorted, th.sorted-desc {position: relative;}
   .fathgrid th.sorted::after {content:"▲";position:absolute;right: 0.4em;}
   .fathgrid th.sorted-desc::after {content:"▼";position:absolute;right: 0.4em;}
-  .fathgrid-export-nav, .fathgrid-columns-nav, .fathgrid-graph-nav {float:right;}
+  .fathgrid-export-nav, .fathgrid-columns-nav, .fathgrid-graph-nav, .fathgrid-print-nav {float:right;}
   .fathgrid-wrapper {position:relative;}
   .fathgrid-wrapper .page-info {}
   
@@ -64,7 +64,7 @@ document.head.appendChild(style);
         sortable:true,
         pageable:true,
         exportable:true,
-        
+        printable:true,
         graphType:'line',
         graphValues:this.undefined,
         showFooter:false,
@@ -168,6 +168,11 @@ document.head.appendChild(style);
         <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" ><path d="M23 14l-8 8-8-8h5v-12h6v12zM15 22h-15v8h30v-8h-15zM28 26h-4v-2h4v2z"></path></svg>
         </a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`
         :''}
+      ${config.printable?`<nav class="fathgrid-print-nav dropdown printgrid${id}"><a href="javascript:void(0)" title="Print">
+        <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" >
+        <path d="M8 2h16v4h-16v-4z"></path>
+        <path d="M30 8h-28c-1.1 0-2 0.9-2 2v10c0 1.1 0.9 2 2 2h6v8h16v-8h6c1.1 0 2-0.9 2-2v-10c0-1.1-0.9-2-2-2zM4 14c-1.105 0-2-0.895-2-2s0.895-2 2-2 2 0.895 2 2-0.895 2-2 2zM22 28h-12v-10h12v10z"></path>        </svg>        </a></nav>
+        `:''}
       `,
       info:(config.pageable)?`<div class="pageinfo${id}">`+renderPageinfo()+`</div>`:'',
       table:`<div id="table-container${id}"></div>`,
@@ -177,6 +182,7 @@ document.head.appendChild(style);
     wrapper.querySelector(":scope #table-container"+id).appendChild(table);
     wrapper.querySelectorAll(":scope .fathgrid-columns-nav a").forEach(x=>x.addEventListener("click",function(e){x.classList.toggle("checked");showColumn(x.dataset.i,x.classList.contains("checked"));stop(e);}));
     wrapper.querySelectorAll(":scope .fathgrid-graph-nav a").forEach(x=>x.addEventListener("click",function(e){x.parentElement.classList.toggle('active'); showGraph();stop(e);}));
+    wrapper.querySelectorAll(":scope .fathgrid-print-nav a").forEach(x=>x.addEventListener("click",function(e){printGrid();stop(e);}));
 
 
     var pageinfos=wrapper.querySelectorAll(`:scope .pageinfo${id}`);
@@ -275,12 +281,12 @@ document.head.appendChild(style);
     }
 
     var _renderData=[];
-    var renderBody=function(dd=null){
+    var renderBody=function(dd=null, update_graph=true){
       if(dd===null) dd=_renderData; else _renderData=dd;
       [...tbody.children].forEach(x=>tbody.removeChild(x));editinput=undefined;//just in case
       if((config.page-1)*config.size >= filteredRecords) config.page=1;
       var lastgroup=null,gg,gtr,gtd,groupdata=[];
-      if(chart!==undefined) updateGraph();
+      if(chart!==undefined && update_graph) updateGraph();
       dd.forEach((dr,idx)=>{
         
           if(typeof config.groupOn==='function' && lastgroup!==(gg=config.groupOn(dr,idx))){
@@ -656,7 +662,7 @@ document.head.appendChild(style);
     }
     var showGraph=function(){
       var dd=config.graphValues(fdata);
-      if (chart!==undefined) {chart.destroy();wrapper.querySelector(".graphplaceholder").innerHTML=graphCanvasHTML; }
+      if (chart!==undefined) {chart.destroy();chart=undefined;wrapper.querySelector(".graphplaceholder").innerHTML=graphCanvasHTML; }
       var ctx=wrapper.querySelector(":scope .graphplaceholder canvas");
       if(wrapper.querySelector(":scope .graphplaceholder").style.display=='block') {wrapper.querySelector(":scope .graphplaceholder").style.display='none';return;}
       wrapper.querySelector(":scope .graphplaceholder").style.display='block';
@@ -685,6 +691,30 @@ document.head.appendChild(style);
       chart = new Chart(ctx, chartConfig);
   
     }
+
+
+    var printGrid=function(){
+      var _page=config.page,_size=config.size;
+      config.page=1;config.size=fdata.length;
+      getData().then(dd=>{
+        renderBody(dd,false);       
+        var WinPrint = window.open();
+        WinPrint.document.write(`<!doctype html><html lang="en"><head>${document.head.innerHTML}</head><body>`);
+        WinPrint.document.write(`<h1>${document.querySelector("h1").innerText}</h1><div class="fathgrid-wrapper">`);
+        WinPrint.document.write(((chart!==undefined)?wrapper.querySelector(":scope .graphplaceholder").innerHTML:'')+table.parentElement.innerHTML);
+        WinPrint.document.write(`</div></body></html>`);
+        WinPrint.document.close();
+        WinPrint.setTimeout(()=>{
+          if(chart!==undefined && WinPrint.document.querySelector("canvas")) WinPrint.document.querySelector("canvas").getContext('2d').drawImage(wrapper.querySelector("canvas"),0,0);
+          WinPrint.focus();
+          WinPrint.print();
+          WinPrint.close();
+        },1000);
+        config.page=_page;config.size=_size;
+        render();
+      });
+    }
+
 
     render();
     return {

@@ -4,6 +4,7 @@ No dependencies pure JavaScript data table/grid with:
 - paging, 
 - sorting (by multiple columns), 
 - filtering (with text input or selecting from a list),
+- printing,
 - export to txt, csv, pdf, xls, etc.,
 - custom row highlights,
 - show/hide columns,
@@ -111,6 +112,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>filterable</td><td>show filter row in thead</td><td>true</td></tr>
 <tr><td>editable</td><td>allow edits</td><td>true</td></tr>
 <tr><td>pageable</td><td>allow pagination</td><td>true</td></tr>
+<tr><td>printable</td><td>allow printing</td><td>true</td></tr>
 <tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
 <tr><td>showFooter</td><td>add footer row to table</td><td>false</td></tr>
 <tr><td>showGroupFooter</td><td>add footer row after each group of records</td><td>false</td></tr>
@@ -124,6 +126,8 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>loading</td><td>message to show while loading data from server</td><td>Loading...</td></tr>
 <tr><td>selectColumns</td><td>enable column show/hide tool</td><td>false</td></tr>
 <tr><td>template</td><td>Templated HTML string for grid wrapper element. Use this to insert custom HTML between grid elements.</td><td>'{tools}{info}{table}{pager}'</td></tr>
+<tr><td>graphType</td><td>graph type, line, bar, pie, etc</td><td>line</td></tr>
+<tr><td>graphValues</td><td>function which returns an object to initalize data graph</td><td>{title: 'Graph Title', labels: ['Jan','Feb','Mar',...], values: [100,200,300,...]}</td></tr>
 </tbody>
 </table>
 
