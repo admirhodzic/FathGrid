@@ -10,9 +10,11 @@ No dependencies pure JavaScript data table/grid with:
 - grouping (with group header/footer),
 - in-place data edit mode,
 - inline data, JSON fetching or server-side processing,
-- sub-grid.
+- sub-grid,
+- interactive data graph.
 
 ![Sample screenshot](/fathgrid.png)
+![Sample screenshot](/fathgrid2.gif)
 
 
 Just include .js file in your HTML and initialize table with:
@@ -24,6 +26,10 @@ where "table1" is an ID of HTML table.
     <table id="table1">
     ...
     </table>
+
+# Online demos
+
+<a href="http://www.fathsoft.com/grid/demos/sample.html">Demo 1</a> | <a href="http://www.fathsoft.com/grid/demos/songs.html">Demo 2</a> |  <a href="http://www.fathsoft.com/grid/demos/edit-demo.html">Editing</a> | 
 
 # Table Data
 Table data can be set inline, in your HTML, or dynamically loaded with setData method or configuration option.
@@ -209,5 +215,9 @@ To enable PDF export, include jsPDF.js in your page and PDF export functionality
     GPL
 
 # Commercial use license
+
 $99 <a href="https://checkout.bluesnap.com/buynow/checkout?sku3644722=1&storeid=9104">Buy</a>
+
+# website
+ <a href="http://fathsoft.com/fathgrid">FathGrid</a>
 

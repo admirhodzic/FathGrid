@@ -81,6 +81,7 @@ document.head.appendChild(style);
         data:null,
         q:'',
         loading:'Loading...',
+        graphHeight:'400px',
         template:'{tools}{info}{graph}{table}{pager}',
         ..._config
     };
@@ -92,7 +93,7 @@ document.head.appendChild(style);
         data=await res.json();
       })();
     }
-    const graphCanvasHTML='<canvas style="width:100%;height:400px;" ></canvas>';
+    const graphCanvasHTML=`<canvas style="width:100%;height:${config.graphHeight};" ></canvas>`;
 
     var table=document.getElementById(id)||document.body.appendChild(table=document.createElement("TABLE"));
     var tbody=table.querySelector(":scope tbody") || table.appendChild(tbody=document.createElement("TBODY"));
