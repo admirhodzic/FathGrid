@@ -146,6 +146,7 @@ Columns definition is an array of objects defining column appereance and functio
 <tr><td>type</td><td>input type for cell editor. supported values are: text, color, image, date, email, number, checkbox, textarea.</td><td></td></tr>
 <tr><td>pattern</td><td>regular expression to check the input value against when editing cell content</td><td></td></tr>
 <tr><td>title</td><td>help string for input in edit mode</td><td></td></tr>
+<tr><td>printable</td><td>include this column in print</td><td>true</td></tr>
 <tr><td>listOfValues</td><td>array of selectable values when editing</td><td></td></tr>
 <tr><td>class</td><td>string of CSS classes to add to column cells. Eg. 'text-right text-bold'</td><td></td></tr>
 </tbody></table>
