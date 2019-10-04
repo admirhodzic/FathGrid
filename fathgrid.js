@@ -1,9 +1,10 @@
 ;var style = document.createElement('style');
 style.setAttribute("id","FathGrid_styles");
 style.innerHTML = `
+  .fathgrid th {padding:0.5em 1.5em;}  
   .fathgrid th.sorted, th.sorted-desc {position: relative;}
-  .fathgrid th.sorted::after {content:"▲";position:absolute;right: 1em;}
-  .fathgrid th.sorted-desc::after {content:"▼";position:absolute;right: 1em;}
+  .fathgrid th.sorted::after {content:"▲";position:absolute;right: 0.4em;}
+  .fathgrid th.sorted-desc::after {content:"▼";position:absolute;right: 0.4em;}
   .fathgrid-export-nav, .fathgrid-columns-nav, .fathgrid-graph-nav {float:right;}
   .fathgrid-wrapper {position:relative;}
   .fathgrid-wrapper .page-info {}
@@ -45,7 +46,9 @@ style.innerHTML = `
     text-decoration:none;
   }
   
-  .fathgrid-wrapper .graphplaceholder  {box-shadow:5px 5px 5px #777;z-index:100;position:absolute;background:white;display:none;transition-duration:0.4s;width:100%;border:solid 1px #999;padding:1em;}
+  .fathgrid-wrapper .graphplaceholder  {background:white;display:none;transition-duration:0.4s;width:100%;border:solid 1px #bbb;margin:15px 0;padding:1em;}
+  
+  .fathgrid-wrapper nav.active {background:#bcf;}
 `;
 document.head.appendChild(style);
 //icons from https://icomoon.io/app/#/select
@@ -78,17 +81,18 @@ document.head.appendChild(style);
         data:null,
         q:'',
         loading:'Loading...',
-        template:'{graph}{tools}{info}{table}{pager}',
+        template:'{tools}{info}{graph}{table}{pager}',
         ..._config
     };
     var selected_rownum=null, totalRecords=0, filteredRecords=0;
-    var data=config.data===null?[]:config.data;
+    var data=config.data===null?[]:config.data,fdata=data;
     if(typeof data==='string') {
       (async()=>{
         const res=await fetch(data).then(d=>d.json());
         data=await res.json();
       })();
     }
+    const graphCanvasHTML='<canvas style="width:100%;height:400px;" ></canvas>';
 
     var table=document.getElementById(id)||document.body.appendChild(table=document.createElement("TABLE"));
     var tbody=table.querySelector(":scope tbody") || table.appendChild(tbody=document.createElement("TBODY"));
@@ -140,6 +144,7 @@ document.head.appendChild(style);
       else data[rownum][idx]=v;
     };
 
+    var chart=undefined;
     var wrapper=this.document.createElement("DIV");wrapper.classList.add("fathgrid-wrapper");
     table.parentNode.insertBefore(wrapper,table);
 
@@ -147,7 +152,7 @@ document.head.appendChild(style);
 
 
     const parts={
-      graph:`<div class="graphplaceholder"><button style="float:right;" onclick="this.parentElement.style.display='none'">&times;</button><canvas style="width:100%;height:400px;" ></canvas></div>`,
+      graph:`<div class="graphplaceholder">${graphCanvasHTML}</div>`,
       tools:`
       ${config.graphValues!==undefined && typeof Chart=='function'?`<nav class="fathgrid-graph-nav dropdown" id="graphs${id}"><a href="javascript:void(0)" title="Show graph">
         <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" >
@@ -170,7 +175,7 @@ document.head.appendChild(style);
     wrapper.innerHTML=config.template.replace(/{(\w+)}/g, (x, y) => parts[y]);        
     wrapper.querySelector(":scope #table-container"+id).appendChild(table);
     wrapper.querySelectorAll(":scope .fathgrid-columns-nav a").forEach(x=>x.addEventListener("click",function(e){x.classList.toggle("checked");showColumn(x.dataset.i,x.classList.contains("checked"));stop(e);}));
-    wrapper.querySelectorAll(":scope .fathgrid-graph-nav a").forEach(x=>x.addEventListener("click",function(e){showGraph();stop(e);}));
+    wrapper.querySelectorAll(":scope .fathgrid-graph-nav a").forEach(x=>x.addEventListener("click",function(e){x.parentElement.classList.toggle('active'); showGraph();stop(e);}));
 
 
     var pageinfos=wrapper.querySelectorAll(`:scope .pageinfo${id}`);
@@ -242,7 +247,7 @@ document.head.appendChild(style);
       }
 
       totalRecords=data.length;
-      var fdata=data.filter(x=>{
+      fdata=data.filter(x=>{
         var ok=true;
 
         thead.querySelectorAll(":scope input, select").forEach((i)=>{
@@ -271,9 +276,10 @@ document.head.appendChild(style);
     var _renderData=[];
     var renderBody=function(dd=null){
       if(dd===null) dd=_renderData; else _renderData=dd;
-      [...tbody.children].forEach(x=>tbody.removeChild(x));
+      [...tbody.children].forEach(x=>tbody.removeChild(x));editinput=undefined;//just in case
       if((config.page-1)*config.size >= filteredRecords) config.page=1;
       var lastgroup=null,gg,gtr,gtd,groupdata=[];
+      if(chart!==undefined) updateGraph();
       dd.forEach((dr,idx)=>{
         
           if(typeof config.groupOn==='function' && lastgroup!==(gg=config.groupOn(dr,idx))){
@@ -624,22 +630,37 @@ document.head.appendChild(style);
       return ret;
     }
 
-
+    const colors=[
+      'rgb(54, 162, 235)',
+      'rgb(255, 99, 132)',
+      'rgb(255, 159, 64)',
+      'rgb(255, 205, 86)',
+      'rgb(153, 102, 255)',
+      'rgb(75, 192, 192)',
+      'rgb(201, 203, 207)'
+    ];
+    var updateGraph=function(){
+      if (chart===undefined) return;
+      var dd=config.graphValues(fdata),ci=0;
+      chart.data={
+        labels: dd.labels,
+        datasets: Array.isArray(dd.values[0])?dd.values.map((x,idx)=>({label:dd.title[idx],data:x,borderWidth:1,backgroundColor: colors[ci],borderColor: colors[ci++],fill:false})):[{
+          label: dd.title,
+          data: dd.values,
+          borderWidth: 1,
+          backgroundColor: colors[ci],borderColor: colors[ci++],
+        }]
+      };
+      chart.update({duration:0});
+    }
     var showGraph=function(){
-      var dd=config.graphValues(data);
+      var dd=config.graphValues(fdata);
+      if (chart!==undefined) {chart.destroy();wrapper.querySelector(".graphplaceholder").innerHTML=graphCanvasHTML; }
       var ctx=wrapper.querySelector(":scope .graphplaceholder canvas");
       if(wrapper.querySelector(":scope .graphplaceholder").style.display=='block') {wrapper.querySelector(":scope .graphplaceholder").style.display='none';return;}
       wrapper.querySelector(":scope .graphplaceholder").style.display='block';
-      const colors=[
-        'rgb(54, 162, 235)',
-        'rgb(255, 99, 132)',
-         'rgb(255, 159, 64)',
-         'rgb(255, 205, 86)',
-         'rgb(153, 102, 255)',
-         'rgb(75, 192, 192)',
-         'rgb(201, 203, 207)'
-      ];var ci=0;
-      var myChart = new Chart(ctx, {
+      var ci=0;
+      chartConfig={
         type: config.graphType,
         data: {
             labels: dd.labels,
@@ -659,7 +680,8 @@ document.head.appendChild(style);
                 }]
             }
         }
-      });
+      };
+      chart = new Chart(ctx, chartConfig);
   
     }
 
