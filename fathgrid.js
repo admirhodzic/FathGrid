@@ -81,7 +81,7 @@ document.head.appendChild(style);
         data:null,
         q:'',
         loading:'Loading...',
-        graphHeight:'400px',
+        graphHeight:'200px',
         template:'{tools}{info}{graph}{table}{pager}',
         ..._config
     };
@@ -215,7 +215,7 @@ document.head.appendChild(style);
         }
         else tfoot.innerHTML='<tr></tr>';
 
-        config.columns.forEach((c,idx)=>{var td=this.document.createElement("TH");td.dataset.i=idx;tfoot.appendChild(td);if(c.visible===false) td.style.display='none';(c.class||'').split(' ').filter(x=>x!='').forEach(c1=>td.classList.add(c1));});
+        config.columns.forEach((c,idx)=>{var td=this.document.createElement("TH");td.dataset.i=idx;tfoot.appendChild(td);if(c.visible===false) td.style.display='none';if(c.printable===false) td.classList.add('noprint');  (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>td.classList.add(c1));});
         
       }
     };
@@ -294,8 +294,9 @@ document.head.appendChild(style);
               tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");
               config.columns.forEach((c,i)=>{
                 gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
+                if(c.printable===false) gtd.classList.add('noprint');
                 (c.class||'').split(' ').filter(x=>x!='').forEach(c=>gtd.classList.add(c));
-                gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
+                gtd.innerHTML='<b>'+(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter)+'</b>';
               });
             }
             tbody.appendChild(gtr=document.createElement("TR"));gtr.appendChild(document.createElement("TD"));
@@ -324,6 +325,7 @@ document.head.appendChild(style);
             }
             else if(column.html!==undefined) c.innerHTML=column.html(dr);
             else c.innerText=x;
+            if(column.printable===false) c.classList.add('noprint');
             r.appendChild(c);
 
           })
@@ -337,6 +339,7 @@ document.head.appendChild(style);
         config.columns.forEach((c,i)=>{
           gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
           (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>gtd.classList.add(c1));
+          if(c.printable===false) gtd.classList.add('noprint');
           gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
         });
         groupdata=[];
@@ -417,7 +420,7 @@ document.head.appendChild(style);
     if(thead.querySelectorAll(":scope th").length===0) {
       var tr=document.createElement("TR");
       thead.appendChild(tr);
-      config.columns.forEach((c,i)=>{tr.appendChild(th=document.createElement("TH"));th.innerText=c.header||c.name;if(c.visible===false) th.style.display="none";th.dataset.name=c.name||i;(c.class||'').split(' ').filter(x=>x!='').forEach(c1=>th.classList.add(c1));});
+      config.columns.forEach((c,i)=>{tr.appendChild(th=document.createElement("TH"));th.innerText=c.header||c.name;if(c.visible===false) th.style.display="none";th.dataset.name=c.name||i;if(c.printable===false) th.classList.add('noprint');(c.class||'').split(' ').filter(x=>x!='').forEach(c1=>th.classList.add(c1));});
     }
 
     if(config.sortBy!==this.undefined) {config.sortBy.map(c=>sort(c,false,true,false));}
@@ -447,6 +450,7 @@ document.head.appendChild(style);
             i.dataset.i=idx;
             f.append(i);
           }
+          if(c.printable===false) f.classList.add("noprint");
           r.append(f);
         });
         thead.append(r);
@@ -699,7 +703,7 @@ document.head.appendChild(style);
       getData().then(dd=>{
         renderBody(dd,false);       
         var WinPrint = window.open();
-        WinPrint.document.write(`<!doctype html><html lang="en"><head>${document.head.innerHTML}</head><body>`);
+        WinPrint.document.write(`<!doctype html><html lang="en"><head>${document.head.innerHTML}<style>table .noprint {display:none}</style></head><body>`);
         WinPrint.document.write(`<h1>${document.querySelector("h1").innerText}</h1><div class="fathgrid-wrapper">`);
         WinPrint.document.write(((chart!==undefined)?wrapper.querySelector(":scope .graphplaceholder").innerHTML:'')+table.parentElement.innerHTML);
         WinPrint.document.write(`</div></body></html>`);
@@ -708,7 +712,7 @@ document.head.appendChild(style);
           if(chart!==undefined && WinPrint.document.querySelector("canvas")) WinPrint.document.querySelector("canvas").getContext('2d').drawImage(wrapper.querySelector("canvas"),0,0);
           WinPrint.focus();
           WinPrint.print();
-          WinPrint.close();
+          
         },1000);
         config.page=_page;config.size=_size;
         render();

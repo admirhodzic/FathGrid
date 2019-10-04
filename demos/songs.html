@@ -13,7 +13,9 @@
     <!-- add jsPdf to enable PDF export -->
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
 
-
+    <!-- add chart.js to enable charting 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+    -->
     <script src="../fathgrid.js"></script>
   </head>
   <body>
@@ -84,10 +86,12 @@ function makeGrid(){
         },
         {
             header:'Search',
-            editable:false,
+            editable:false,printable:false,
             html:(item)=>`<a href="http://google.com/search?tbm=vid&q=${item[2]+' '+item[3]}">view</a>`
         }
       ],
+
+//      graphValues:(data)=>({title:"Songs by artist",labels:[... new Set(data.map(x=>x[3]))],values:[... new Set(data.map(x=>x[3]))].map(x=>data.filter(i=>i[3]==x).length)  })
     });
 
 
