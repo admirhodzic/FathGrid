@@ -296,7 +296,7 @@ document.head.appendChild(style);
                 gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
                 if(c.printable===false) gtd.classList.add('noprint');
                 (c.class||'').split(' ').filter(x=>x!='').forEach(c=>gtd.classList.add(c));
-                gtd.innerHTML='<b>'+(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter)+'</b>';
+                gtd.innerHTML='<b>'+((typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter))+'</b>';
               });
             }
             tbody.appendChild(gtr=document.createElement("TR"));gtr.appendChild(document.createElement("TD"));
@@ -704,7 +704,7 @@ document.head.appendChild(style);
         renderBody(dd,false);       
         var WinPrint = window.open();
         WinPrint.document.write(`<!doctype html><html lang="en"><head>${document.head.innerHTML}<style>table .noprint {display:none}</style></head><body>`);
-        WinPrint.document.write(`<h1>${document.querySelector("h1").innerText}</h1><div class="fathgrid-wrapper">`);
+        WinPrint.document.write(`<h1>${(document.querySelector("h1")||document.querySelector("TITLE")).innerText}</h1><div class="fathgrid-wrapper">`);
         WinPrint.document.write(((chart!==undefined)?wrapper.querySelector(":scope .graphplaceholder").innerHTML:'')+table.parentElement.innerHTML);
         WinPrint.document.write(`</div></body></html>`);
         WinPrint.document.close();
@@ -712,7 +712,7 @@ document.head.appendChild(style);
           if(chart!==undefined && WinPrint.document.querySelector("canvas")) WinPrint.document.querySelector("canvas").getContext('2d').drawImage(wrapper.querySelector("canvas"),0,0);
           WinPrint.focus();
           WinPrint.print();
-          
+          WinPrint.close();
         },1000);
         config.page=_page;config.size=_size;
         render();
