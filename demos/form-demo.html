@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>FathGrid demo!</title>
+    
+    <!-- add jsPdf to enable PDF export -->
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
+
+
+    <script src="../fathgrid.js"></script>
+    <script src="../fathform.js"></script>
+
+    <style>
+      tr.selected td:nth-child(1) {border-left:solid 4px cornflowerblue;}
+      tr.selected > td{background:#ddd;}
+      tr.subgrid > td {border-left:solid 4px cornflowerblue;border-bottom: solid 2px #ddd}
+    </style>
+
+  </head>
+  <body>
+      <div class="container-fluid">
+    <h1>FathGrid with server-side data</h1>
+    <p>This demo uses FathGrid.serverURL to get data from server-side API (<a href="https://jsonplaceholder.typicode.com/">jsonplaceholder</a>).</p>
+    <p>When a row is selected, sub-grid is initialized with detail data.</p>
+
+    <div style="display: flex;">
+      <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
+      <div style="flex-grow: 1">
+        
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Search</span>
+          </div>
+          <input onchange="t1.search(this.value)" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+        </div>        
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="col-md-8">
+          <table  id="table1" class="table table-bordered ">       <thead class="thead-light"></thead> </table>
+      </div>
+      <div class="col-md-4">
+
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Form</h5>
+          </div>
+          <div class="modal-body">
+              <div id="form-container">(select record)</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="f1.reset()">Reset</button>
+            <button type="button" class="btn btn-primary" onclick="f1.save()">Save</button>
+          </div>
+        </div>        
+        
+
+
+      </div>
+      
+    </div>
+
+  </div>
+  
+    <script>
+        var t1,f1,users=[];
+
+        fetch('https://jsonplaceholder.typicode.com/users')
+          .then(response => response.json())
+          .then(json => {
+            json.forEach(x=>users.push({value:x.id,name:x.name}));
+
+
+            //initialize main grid with posts data from server
+            t1=FathGrid("table1",{
+              serverURL:'https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}',
+              size:10,
+              editable:true,
+              onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
+              
+              //this onclick function shows comments for selected post
+              onClick:function(item,col,el){
+                f1=FathForm(item,'form-container',{
+                  fields:[
+                    {name:'id', label:'ID',disabled:true},
+                    {name:'userId', label:'User',list:users},
+                    {name:'title',label:'Title',required:true},
+                    {name:'body',type:'textarea',style:'height:12rem',label:'Body'},
+                    {name:'active',type:'checkbox',label:'Active'},
+                    {name:'rad', type:'radio',label:'Radios',list:[{value:'1',name:'Radio1'},{value:'2',name:'Radio2'},{value:'3',name:'Radio3'},]},
+                  ],
+                  validate:(item,errors)=>{if(item.body=='') {errors.add('body','Must enter something!');return false;}},
+                  save:(item2)=>{console.log("save",item2,item.rownum);Object.keys(item).forEach(k=>{item[k]=item2[k]});t1.refresh();t1.selectRow(item.rownum);},
+
+                });
+              },
+
+              columns:[
+                  {editable:false, name:'id',header:"ID"},
+                  {
+                    name:'userId', 
+                    filter:users,                listOfValues:users,
+                    value:function(item){return users.find(i=>i.value==item.userId).name;},
+                    header:'User'
+                  },
+                  {name:'title',header:'Title'},
+                  {name:'body',header:'Text',type:'textarea', value:(item)=>`${item.body.substring(0,30)+'...'}`},
+              ],
+            });
+
+
+          });
+    </script>
+  
+  </body>
+</html>
+
+
+

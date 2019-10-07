@@ -30,7 +30,7 @@ where "table1" is an ID of HTML table.
 
 # Online demos
 
-<a href="http://www.fathsoft.com/grid/demos/sample.html">Demo 1</a> | <a href="http://www.fathsoft.com/grid/demos/songs.html">Demo 2</a> |  <a href="http://www.fathsoft.com/grid/demos/edit-demo.html">Editing</a> | 
+<a href="http://www.fathsoft.com/grid/demos/sample.html">Demo 1</a> | <a href="http://www.fathsoft.com/grid/demos/songs.html">Demo 2</a> |  <a href="http://www.fathsoft.com/grid/demos/edit-demo.html">Editing</a> | <a href="http://www.fathsoft.com/grid/demos/form-demo.html">Forms Demo</a> | 
 
 # Table Data
 Table data can be set inline, in your HTML, or dynamically loaded with setData method or configuration option.
