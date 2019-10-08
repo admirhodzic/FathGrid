@@ -223,6 +223,6 @@ To enable PDF export, include jsPDF.js in your page and PDF export functionality
 
 $99 <a href="https://checkout.bluesnap.com/buynow/checkout?sku3644722=1&storeid=9104">Buy</a>
 
-# website
+# Website
  <a href="http://fathsoft.com/fathgrid">FathGrid</a>
 
