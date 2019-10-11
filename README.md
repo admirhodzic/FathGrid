@@ -129,7 +129,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>selectColumns</td><td>enable column show/hide tool</td><td>false</td></tr>
 <tr><td>template</td><td>Templated HTML string for grid wrapper element. Use this to insert custom HTML between grid elements.</td><td>{tools}{info}{graph}{table}{pager}</td></tr>
 <tr><td>graphType</td><td>graph type, line, bar, pie, etc</td><td>line</td></tr>
-<tr><td>graphValues</td><td>function which returns an object to initalize data graph</td><td>{title: 'Graph Title', labels: ['Jan','Feb','Mar',...], values: [100,200,300,...]}</td></tr>
+<tr><td>graphValues</td><td>function which returns an object to initialize data graph</td><td>{title: 'Graph Title', labels: ['Jan','Feb','Mar',...], values: [100,200,300,...]}</td></tr>
 <tr><td>onInitFilter</td><td>function called after filter row is initialized. Function parameter is TR element of table filter.</td><td>function(Element){}</td></tr>
 <tr><td>onInitTable</td><td>function called after table data is refreshed. Function paramter is TBODY element which contains data rows.</td><td>function(Element){}</td></tr>
 <tr><td>onInitInput</td><td>function called after table cell editor is initialized. Function paramters are:<br/>- item : data item<br/>- idx : column index<br/>- el : TD cell element in which input is located</td><td>function(Item, Idx, El){}</td></tr>
