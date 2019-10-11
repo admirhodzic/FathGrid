@@ -62,6 +62,7 @@
             t1=FathGrid("table1",{
               serverURL:'https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}',
               size:10,
+              
               editable:true,
               onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
               
@@ -90,6 +91,7 @@
                 filterable:false,
                 pageable:false,
                 exportable:false,
+                printable:false,
                 columns:[{name:'name'},{name:'email'},{name:'body',value:function(item){return item.body.substring(0,30)+'...';}}]
             });
 

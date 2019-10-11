@@ -64,7 +64,7 @@ var t1=FathGrid("table1",{
         {
           header:'ID',name:'id',
           editable:false,
-          groupFooter:(data)=>`Country Total ${data[0].country}`,
+          groupFooter:(data)=>`${data[0].country} Total`,
           footer:'Total'
         },
         {
@@ -82,8 +82,8 @@ var t1=FathGrid("table1",{
         },
         {type:'text',editable:true,
           name:'salary',header:'Salary',class:"text-right",
-          footer:function(data){return (data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))},
-          groupFooter:function(data){return (data.map(x=>parseFloat(x.salary.replace('$',''))).reduce((x,s)=>x+s,0).toFixed(2))}
+          footer:FathGrid.SUM,
+          groupFooter:FathGrid.SUM
         },
         {name:'gender',filter:['Female','Male'],header:'Gender',listOfValues:['Female','Male']},
         {name:'active',type:'checkbox',header:'Active',filter:[{value:0,name:'No'},{value:1,name:'Yes'}]},

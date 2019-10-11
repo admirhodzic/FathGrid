@@ -1,11 +1,14 @@
 ;var style = document.createElement('style');
 style.setAttribute("id","FathGrid_styles");
 style.innerHTML = `
-  .fathgrid th {padding:0.5em 1.5em;}  
-  .fathgrid th.sorted, th.sorted-desc {position: relative;}
-  .fathgrid th.sorted::after {content:"▲";position:absolute;right: 0.4em;}
-  .fathgrid th.sorted-desc::after {content:"▼";position:absolute;right: 0.4em;}
-  .fathgrid-export-nav, .fathgrid-columns-nav, .fathgrid-graph-nav, .fathgrid-print-nav {float:right;}
+  .fathgrid-wrapper .fathgrid thead th {padding:0.5em 1.5em;}  
+  .fathgrid-wrapper .fathgrid thead th.sorted, th.sorted-desc {position: relative;}
+  .fathgrid-wrapper .fathgrid thead th.sorted::after {content:"▲";position:absolute;right: 0.4em;}
+  .fathgrid-wrapper[dir=rtl] .fathgrid thead th.sorted::after {right:auto;left: 0.4em;}
+  .fathgrid-wrapper .fathgrid thead th.sorted-desc::after {content:"▼";position:absolute;right: 0.4em;}
+  .fathgrid-wrapper[dir=rtl] .fathgrid thead th.sorted-desc::after {right:auto;left: 0.4em;}
+  .fathgrid-wrapper .fathgrid-export-nav, .fathgrid-wrapper .fathgrid-columns-nav, .fathgrid-wrapper .fathgrid-graph-nav, .fathgrid-wrapper .fathgrid-print-nav {float:right;}
+  .fathgrid-wrapper[dir=rtl] .fathgrid-export-nav, .fathgrid-wrapper[dir=rtl] .fathgrid-columns-nav, .fathgrid-wrapper[dir=rtl] .fathgrid-graph-nav, .fathgrid-wrapper[dir=rtl] .fathgrid-print-nav {float:left;}
   .fathgrid-wrapper {position:relative;}
   .fathgrid-wrapper .page-info {}
   
@@ -27,6 +30,7 @@ style.innerHTML = `
   .fathgrid-wrapper input, .fathgrid-wrapper textarea , .fathgrid-wrapper select {border:0;}
 
   .fathgrid-wrapper nav a.checked::before{content:'✓';position:absolute;left:1em;}  
+  .fathgrid-wrapper[dir=rtl] nav a.checked::before{left:auto;right:1em;}  
 
   .fathgrid-wrapper .pagination {
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
@@ -34,7 +38,7 @@ style.innerHTML = `
     list-style:none;
     padding-inline-start:0;
   }
-  .fathgrid-wrapper .page-link:hover {  background:#eee;}
+  .fathgrid-wrapper .page-link:not(.gotopage):hover {  background:#eee;}
   .fathgrid-wrapper .page-link {
     position: relative;
     color: #007bff;
@@ -72,6 +76,8 @@ document.head.appendChild(style);
         showGroupFooter:false,
         onInitFilter:function(el){},
         onInitTable:function(el){},
+        onInitInput:function(item,idx,el){},
+        prepareData:async function(data){return data;},
         sort:[],
         columns:[],
         onRender:function(){},
@@ -80,11 +86,25 @@ document.head.appendChild(style);
         rowClass:null,
         data:null,
         q:'',
-        loading:'Loading...',
+        rtl:false,
+        decimals:2,
+        
         graphHeight:'200px',
         template:'{tools}{info}{graph}{table}{pager}',
+        lang:{
+          of:"of",
+          yes:"yes",
+          export:"Export",
+          previous:"Previous",
+          next:"Next",
+          last:"Last",
+          first:"First",
+          gotoPage:"Goto Page",
+          loading:'Loading...',
+        },
         ..._config
     };
+
     var selected_rownum=null, totalRecords=0, filteredRecords=0;
     var data=config.data===null?[]:config.data,fdata=data;
     if(typeof data==='string') {
@@ -102,16 +122,17 @@ document.head.appendChild(style);
     var editinput=undefined;
 
     var renderPageinfo=function(){
-      return `<span class="page-info">${(config.page-1)*config.size}-${Math.min(filteredRecords,config.page*config.size)} of ${totalRecords!=filteredRecords?`${filteredRecords}/ `:''} ${totalRecords}</span>`;
+      return `<span class="page-info">${(config.page-1)*config.size}-${Math.min(filteredRecords,config.page*config.size)} ${config.lang.of} ${totalRecords!=filteredRecords?`${filteredRecords}/`:''}${totalRecords}</span>`;
     }
     var renderPaginator=function(){
+      var rr=`&#x23f5;`,ll=`&#x23F4;`;
       return `
         <ul class="pagination" >
-          <li class="page-item"><a class="page-link firstpage" title="First" href="#">&#x2503;&#x23F4;</a></li>
-          <li class="page-item"><a class="page-link prevpage" title="Previous" href="#">&#x23F4;</a></li>
-          <li class="page-item active"><a class="page-link gotopage" title="Goto page" href="javascript:void(0)">${config.page} / ${Math.floor((filteredRecords+(config.size-1))/config.size)}</a></li>
-          <li class="page-item"><a class="page-link nextpage" title="Next" href="#">&#x23f5;</a></li>
-          <li class="page-item"><a class="page-link lastpage" title="Last" href="#">&#x23f5;&#x2503;</a></li>
+          <li class="page-item"><a class="page-link firstpage" title="${config.lang.first}" href="#">&#x2503;${config.rtl?rr:ll}</a></li>
+          <li class="page-item"><a class="page-link prevpage" title="${config.lang.previous}" href="#">${config.rtl?rr:ll}</a></li>
+          <li class="page-item active"><a class="page-link gotopage" title="${config.lang.gotoPage}" href="javascript:void(0)">${config.page} / ${Math.floor((filteredRecords+(config.size-1))/config.size)}</a></li>
+          <li class="page-item"><a class="page-link nextpage" title="${config.lang.next}" href="#">${config.rtl?ll:rr}</a></li>
+          <li class="page-item"><a class="page-link lastpage" title="${config.lang.last}" href="#">${config.rtl?ll:rr}&#x2503;</a></li>
         </ul>
       `;
     }
@@ -147,6 +168,8 @@ document.head.appendChild(style);
 
     var chart=undefined;
     var wrapper=this.document.createElement("DIV");wrapper.classList.add("fathgrid-wrapper");
+    if(config.rtl) wrapper.setAttribute("dir","rtl");
+    
     table.parentNode.insertBefore(wrapper,table);
 
     thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={};if(th.innerText==='')th.innerText=config.columns[i].header||config.columns[i].name; else config.columns[i].header=th.innerText;});
@@ -166,7 +189,7 @@ document.head.appendChild(style);
         :''}
       ${config.exportable?`<nav class="fathgrid-export-nav dropdown" id="exporter${id}"><a href="javascript:void(0)">
         <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" ><path d="M23 14l-8 8-8-8h5v-12h6v12zM15 22h-15v8h30v-8h-15zM28 26h-4v-2h4v2z"></path></svg>
-        </a><div class="dropdown-content"><a href="javascript:void(0)" title="Export" data-format="txt">TXT</a> <a href="javascript:void(0)" title="Export" data-format="csv">CSV</a> <a href="javascript:void(0)" title="Export" data-format="html">HTML</a> <a href="javascript:void(0)" title="Export" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="Export" data-format="pdf">PDF</a>`:''}</div></nav>`
+        </a><div class="dropdown-content"><a href="javascript:void(0)" title="${config.lang.export}" data-format="txt">TXT</a> <a href="javascript:void(0)" title="${config.lang.export}" data-format="csv">CSV</a> <a href="javascript:void(0)" title="${config.lang.export}" data-format="html">HTML</a> <a href="javascript:void(0)" title="${config.lang.export}" data-format="xls">XLS</a> ${(typeof window.jsPDF=='function')?`<a href="javascript:void(0)" title="${config.lang.export}" data-format="pdf">PDF</a>`:''}</div></nav>`
         :''}
       ${config.printable?`<nav class="fathgrid-print-nav dropdown printgrid${id}"><a href="javascript:void(0)" title="Print">
         <svg style="display:block-inline;width:1.5em;margin:4px;stroke-width: 0;stroke: currentColor;fill: currentColor;" viewBox="0 0 32 32" >
@@ -242,7 +265,7 @@ document.head.appendChild(style);
           const res=await fetch(url);
           totalRecords=parseInt(res.headers.get("x-total-count"));
           range=res.headers.get("Content-Range");
-          return await res.json();
+          return await config.prepareData( await res.json());
         })();
 
         data=Array.isArray(ret)?ret:(ret.content!==undefined?ret.content:ret.data);
@@ -271,7 +294,7 @@ document.head.appendChild(style);
           else if(i.value!='' && (typeof vv(x,i.dataset.i) =='string')&& !vv(x,i.dataset.i).includes(i.value)) ok=false;
           
           if(ok && config.q!=''){
-            ok = (config.columns.find((f,ci)=>(typeof vv(x,ci) == 'number'?vv(x,ci)==config.q:(typeof vv(x,ci)=='string'?(vv(x,ci).includes(config.q)):(vv(x,ci)==config.q))))!==undefined);
+            ok = (config.columns.find((f,ci)=>(typeof vv(x,ci) == 'number'?vv(x,ci)==config.q:(typeof vv(x,ci)=='string'?(vv(x,ci).toLowerCase().includes(config.q.toLowerCase())):(vv(x,ci)==config.q))))!==undefined);
           }
         });
         return ok;
@@ -296,7 +319,7 @@ document.head.appendChild(style);
                 gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
                 if(c.printable===false) gtd.classList.add('noprint');
                 (c.class||'').split(' ').filter(x=>x!='').forEach(c=>gtd.classList.add(c));
-                gtd.innerHTML='<b>'+((typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter))+'</b>';
+                if((xx=((typeof c.groupFooter=='function')?c.groupFooter(groupdata,c.name||i,gtd,config.decimals):(c.groupFooter||null)))!==null) gtd.innerHTML='<b>'+xx+'</b>';
               });
             }
             tbody.appendChild(gtr=document.createElement("TR"));gtr.appendChild(document.createElement("TD"));
@@ -340,7 +363,7 @@ document.head.appendChild(style);
           gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
           (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>gtd.classList.add(c1));
           if(c.printable===false) gtd.classList.add('noprint');
-          gtd.innerHTML=(typeof c.groupFooter=='function')?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter);
+          if((xx=((typeof c.groupFooter=='function')?c.groupFooter(groupdata,c.name||i,gtd,config.decimals):(c.groupFooter||null)))!==null) gtd.innerHTML='<b>'+xx+'</b>';
         });
         groupdata=[];
       }
@@ -373,7 +396,9 @@ document.head.appendChild(style);
       })});
 
       if(tfoot!==null){
-        tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) td.innerHTML=(typeof config.columns[idx].footer==='function')?config.columns[idx].footer(dd,td):config.columns[idx].footer});
+        tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) 
+          if((xx=((typeof config.columns[idx].footer==='function')?config.columns[idx].footer(fdata,config.columns[idx].name||idx,td,config.decimals):config.columns[idx].footer||null))!==null) td.innerHTML=xx;
+        });
       }
       config.onRender();
       config.onInitTable(tbody);
@@ -382,7 +407,7 @@ document.head.appendChild(style);
 
     var render=function(){
         table.querySelectorAll(":scope tbody tr").forEach(tr => {tr.parentNode.removeChild(tr);});
-        tbody.innerHTML=`<tr><td colspan="${config.columns.length}">${config.loading}</td></tr>`;
+        tbody.innerHTML=`<tr><td colspan="${config.columns.length}">${config.loading||config.lang.loading}</td></tr>`;
         getData().then(dd=>{          renderBody(dd);        });
         
 
@@ -460,7 +485,7 @@ document.head.appendChild(style);
 
 
     var stop=function(e){e.preventDefault();e.stopPropagation();};
-    var isChecked=function(v){return v=='yes'||v=='true'||v===true||v=='on'||v==1||v=='1';};
+    var isChecked=function(v){return v==config.lang.yes||v=='yes'||v=='true'||v===true||v=='on'||v==1||v=='1';};
 
     var editNext=function(rownum,col){
       var r=rownum,c=col;
@@ -577,6 +602,7 @@ document.head.appendChild(style);
         }
       });
       editinput=i;
+      config.onInitFilter(data[rownum-1],column.name||col,td);
     };
     var downloadFile=function(blob,filename,type="text/plain"){
         if(typeof blob=='object') {blob.save(filename);return;}
@@ -628,7 +654,7 @@ document.head.appendChild(style);
             if(config.showGroupFooter===true && lastgroup!==null){
               doc.line(1,y-.4,20,y-.4);
               config.columns.forEach((c,ic)=>{
-                doc.text(''+(typeof c.groupFooter=='function'?c.groupFooter(groupdata):(undefined===c.groupFooter?'':c.groupFooter)),x,y,{});
+                doc.text(''+(typeof c.groupFooter=='function'?c.groupFooter(groupdata,c.name||ic,null,config.decimals):(undefined===c.groupFooter?'':c.groupFooter)),x,y,{});
                 x+=(cw[ic]/cww)*20;
               });
               doc.line(1,y+.2,20,y+.2);
@@ -668,7 +694,7 @@ document.head.appendChild(style);
           doc.line(1,y-.4,20,y-.4);
           x=1;
           config.columns.forEach((c,ic)=>{
-            doc.text(''+(typeof c.groupFooter=='function'?c.groupFooter(groupdata):(c.groupFooter===undefined?'':c.groupFooter)),x,y,{});
+            doc.text(''+(typeof c.groupFooter=='function'?c.groupFooter(groupdata,c.name||ic,null,config.decimals):(c.groupFooter===undefined?'':c.groupFooter)),x,y,{});
             x+=(cw[ic]/cww)*20;
           });
           doc.line(1,y+.2,20,y+.2);
@@ -796,4 +822,10 @@ document.head.appendChild(style);
       refresh:renderBody
     }
   }
+  win.FathGrid.SUM=function(data,cname,el,_decimals=2){return (data.map(x=>parseFloat(x[cname].replace('$',''))).reduce((x,s)=>x+s,0)).toFixed(_decimals)}
+  win.FathGrid.AVG=function(data,cname,el,_decimals=2){return data.length?(data.map(x=>parseFloat(x[cname].replace('$',''))).reduce( ( p, c ) => p + c, 0 ) / data.length).toFixed(_decimals):null;}
+  win.FathGrid.MIN=function(data,cname,el,_decimals=2){var y=data[0][cname];if( typeof y=='number') return Math.min(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y<x[cname])?y:x[cname]));return y;}
+  win.FathGrid.MAX=function(data,cname,el,_decimals=2){var y=data[0][cname];if( typeof y=='number') return Math.max(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y>x[cname])?y:x[cname]));return y;}
+  
 })(typeof window !== "undefined" ? window : this));
+

@@ -123,11 +123,29 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>sortBy</td><td>Array or column indices to sort always. Usable for grouping records.</td><td>{}</td></tr>
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
 <tr><td>serverURL</td><td>templated string URL for data retrieval</td><td>undefined</td></tr>
+<tr><td>prepareData</td><td>custom function which converts received JSON object into data array</td><td>async function(json)</td></tr>
 <tr><td>loading</td><td>message to show while loading data from server</td><td>Loading...</td></tr>
+<tr><td>rtl</td><td>set to true for RTL languages</td><td>false</td></tr>
 <tr><td>selectColumns</td><td>enable column show/hide tool</td><td>false</td></tr>
 <tr><td>template</td><td>Templated HTML string for grid wrapper element. Use this to insert custom HTML between grid elements.</td><td>'{tools}{info}{table}{pager}'</td></tr>
 <tr><td>graphType</td><td>graph type, line, bar, pie, etc</td><td>line</td></tr>
 <tr><td>graphValues</td><td>function which returns an object to initalize data graph</td><td>{title: 'Graph Title', labels: ['Jan','Feb','Mar',...], values: [100,200,300,...]}</td></tr>
+<tr><td>onInitFilter</td><td>function called after filter row is initialized. Function parameter is TR element of table filter.</td><td>function(Element){}</td></tr>
+<tr><td>onInitTable</td><td>function called after table data is refreshed. Function paramter is TBODY element which contains data rows.</td><td>function(Element){}</td></tr>
+<tr><td>onInitInput</td><td>function called after table cell editor is initialized. Function paramters are:<br/>- item : data item<br/>- idx : column index<br/>- el : TD cell element in which input is located</td><td>function(Item, Idx, El){}</td></tr>
+<tr><td>lang</td><td>language translation object</td><td>
+        {<br/>
+          of:"of",<br/>
+          yes:"yes",<br/>
+          export:"Export",<br/>
+          previous:"Previous",<br/>
+          next:"Next",<br/>
+          last:"Last",<br/>
+          first:"First",<br/>
+          gotoPage:"Goto Page",<br/>
+          loading:'Loading...',<br/>
+        }<br/>
+</td></tr>
 </tbody>
 </table>
 
@@ -141,7 +159,7 @@ Columns definition is an array of objects defining column appereance and functio
 <tr><td>html</td><td>function which returns cell HTML content</td><td>function(item){}</td></tr>
 <tr><td>header</td><td>header text</td><td></td></tr>
 <tr><td>footer</td><td>function which returns footer cell HTML content</td><td>function(data,element){}</td></tr>
-<tr><td>groupFooter</td><td>function which returns group footer cell HTML content</td><td>function(data,element){}</td></tr>
+<tr><td>groupFooter</td><td>function which returns group footer cell HTML content. Pre-defined values that can be used are:<br/>- FathGrid.SUM<br/>- FathGrid.AVG<br/>- FathGrid.MIN<br/>- FathGrid.MAX</td><td>function(data,element){}</td></tr>
 <tr><td>editable</td><td>boolean if edit is allowed, or a function(item,col) which return boolean</td><td></td></tr>
 <tr><td>type</td><td>input type for cell editor. supported values are: text, color, image, date, email, number, checkbox, textarea.</td><td></td></tr>
 <tr><td>pattern</td><td>regular expression to check the input value against when editing cell content</td><td></td></tr>
