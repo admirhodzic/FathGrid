@@ -127,7 +127,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>loading</td><td>message to show while loading data from server</td><td>Loading...</td></tr>
 <tr><td>rtl</td><td>set to true for RTL languages</td><td>false</td></tr>
 <tr><td>selectColumns</td><td>enable column show/hide tool</td><td>false</td></tr>
-<tr><td>template</td><td>Templated HTML string for grid wrapper element. Use this to insert custom HTML between grid elements.</td><td>'{tools}{info}{table}{pager}'</td></tr>
+<tr><td>template</td><td>Templated HTML string for grid wrapper element. Use this to insert custom HTML between grid elements.</td><td>{tools}{info}{graph}{table}{pager}</td></tr>
 <tr><td>graphType</td><td>graph type, line, bar, pie, etc</td><td>line</td></tr>
 <tr><td>graphValues</td><td>function which returns an object to initalize data graph</td><td>{title: 'Graph Title', labels: ['Jan','Feb','Mar',...], values: [100,200,300,...]}</td></tr>
 <tr><td>onInitFilter</td><td>function called after filter row is initialized. Function parameter is TR element of table filter.</td><td>function(Element){}</td></tr>
