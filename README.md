@@ -193,7 +193,7 @@ To add filter values to column 5, and let grid fill in values for filter of colu
         {type:'checkbox',
           editable:true,
           filter:[{name:'no',value:0},{name:'yes',value:1}],
-          footer:function(data,el){return data.map(x=>x.amount).reduce((x,s)=>x+s).toFixed(2);}, //display sum of field "amount"
+          footer: FathGrid.SUM, //display sum of field "amount"
 
         },
       ],
