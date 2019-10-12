@@ -42,7 +42,14 @@
       </div>
     </div>
 
+    
     <table  id="table1" class="table table-bordered ">       <thead class="thead-light"></thead> </table>
+
+
+    <button class="btn btn-info" onclick="addpost()">+ add post</button> 
+    <button class="btn btn-danger" onclick="removepost()">delete selected row</button>
+
+
 
     <div style="display: none;">
       <table  id="table2" class="table table-bordered table-sm">       <thead class="thead-light"></thead> </table>
@@ -64,10 +71,13 @@
               size:10,
               
               editable:true,
-              onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
+              onChange:function(data,col,old,value){
+                console.log("onChange:",data.id,col,old,value);if(value=='') return false;
+                updatepost(data);
+              },
               
               //this onclick function shows comments for selected post
-              onClick:function(item,col,el){
+              onClick_dummy:function(item,col,el){
                 t2.setServerURL('https://jsonplaceholder.typicode.com/comments?postId='+item.id+'&_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}');
                 t1.showSubgrid(t2,`<h4>Comments</h4>`);
               },
@@ -96,6 +106,44 @@
             });
 
           });
+
+          function addpost(){
+            fetch('https://jsonplaceholder.typicode.com/posts', {
+              method: 'POST',
+              body: JSON.stringify({
+                title: 'new',
+                body: 'new',
+                userId: 1
+              }),
+              headers: {
+                "Content-type": "application/json; charset=UTF-8"
+              }
+            })
+            .then(response => response.json())
+            .then(json => {
+              t1.insertRow(null,json);
+            })            
+          }
+
+          function removepost(){
+            var item=t1.getSelectedItem();
+            if(item!=null && confirm("Delete post "+item.id+"?")){
+              fetch('https://jsonplaceholder.typicode.com/posts/'+item.id, {
+                method: 'DELETE'
+              }).then(res=>t1.deleteRow(item.rownum))
+            }
+          }
+          function updatepost(item){
+            fetch('https://jsonplaceholder.typicode.com/posts/'+item.id, {
+              method: 'PUT',
+              body: JSON.stringify(item),
+              headers: {
+                "Content-type": "application/json; charset=UTF-8"
+              }
+            })
+            .then(response => response.json())
+            .then(json => console.log("received from server: ",json))
+          }
     </script>
   
   </body>

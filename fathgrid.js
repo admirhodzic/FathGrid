@@ -522,7 +522,7 @@ document.head.appendChild(style);
 
         var old=vv(data[editinput.dataset.rownum-1],editinput.dataset.col-1);
         ss(editinput.dataset.rownum-1,editinput.dataset.col-1,newval);
-        if(false!==config.onChange(data[editinput.dataset.rownum-1],editinput.dataset.col,old,newval)){
+        if(old==newval || false!==config.onChange(data[editinput.dataset.rownum-1],editinput.dataset.col,old,newval)){
           editinput.remove();editinput=undefined;
           renderBody();
         }else {
@@ -548,7 +548,7 @@ document.head.appendChild(style);
 
         lov.forEach(v=>{var o=document.createElement("OPTION");o.innerText=(undefined===v.name)?v:v.name;o.value=(undefined==v.value)?v:v.value;if(o.value==vv(data[rownum-1],col-1))o.setAttribute("selected","selected");i.add(o);});
         i.focus();
-        i.addEventListener("change",function(e){config.onChange(data[rownum-1],col,data[rownum-1][col-1],e.srcElement.value);});
+        i.addEventListener("change",function(e){if(vv(data[rownum-1],col-1)!=e.srcElement.value) config.onChange(data[rownum-1],col,vv(data[rownum-1],col-1),e.srcElement.value);});
       }
       else {
         
@@ -588,7 +588,7 @@ document.head.appendChild(style);
             }
             break;
           case 13: case 9:
-            if(el.nextSibling!==null) {
+            {
               stop(e);
               editNext(rownum,col);
             }
@@ -602,7 +602,7 @@ document.head.appendChild(style);
         }
       });
       editinput=i;
-      config.onInitFilter(data[rownum-1],column.name||col,td);
+      config.onInitInput(data[rownum-1],column.name||col,el);
     };
     var downloadFile=function(blob,filename,type="text/plain"){
         if(typeof blob=='object') {blob.save(filename);return;}
