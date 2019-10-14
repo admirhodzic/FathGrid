@@ -115,9 +115,7 @@
                 body: 'new',
                 userId: 1
               }),
-              headers: {
-                "Content-type": "application/json; charset=UTF-8"
-              }
+              headers: {                "Content-type": "application/json; charset=UTF-8"              }
             })
             .then(response => response.json())
             .then(json => {
@@ -133,13 +131,12 @@
               }).then(res=>t1.deleteRow(item.rownum))
             }
           }
+          
           function updatepost(item){
             fetch('https://jsonplaceholder.typicode.com/posts/'+item.id, {
               method: 'PUT',
               body: JSON.stringify(item),
-              headers: {
-                "Content-type": "application/json; charset=UTF-8"
-              }
+              headers: {                "Content-type": "application/json; charset=UTF-8"              }
             })
             .then(response => response.json())
             .then(json => console.log("received from server: ",json))

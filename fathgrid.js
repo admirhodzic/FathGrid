@@ -140,6 +140,8 @@ document.head.appendChild(style);
     var prevPage=function(){config.page=Math.max(1, config.page-1);render();};
     var lastPage=function(){config.page=Math.floor((filteredRecords+config.size-1)/config.size);render();};
     var firstPage=function(){config.page=1;render();};
+    var getSelectedItems=function(){return selected_rownum?[data[selected_rownum-1]]:[];};
+
     function clearSelection(){if (window.getSelection) {if (window.getSelection().empty) { window.getSelection().empty();} else if (window.getSelection().removeAllRanges) {  window.getSelection().removeAllRanges();}} else if (document.selection) {  document.selection.empty();}}
     
     var getSort=function(){      return config.sort;    };
@@ -334,6 +336,7 @@ document.head.appendChild(style);
           r.dataset.id=dr.id;
           r.dataset.rownum=dr.rownum;
           if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
+          if(getSelectedItems().includes(dr)) r.classList.add("selected");
           
           config.columns.forEach((column,col)=>{
             var c=document.createElement('td');
@@ -807,6 +810,7 @@ document.head.appendChild(style);
       export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt=='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
       search:function(q){if(q===undefined) return config.q; config.q=q;render();},
       getSelectedItem:function(){return selected_rownum?data[selected_rownum-1]:null;},
+      getSelectedItems:getSelectedItems,
       setServerURL:function(u){config.serverURL=u;render();},
       wrapperEl:wrapper,
       showSubgrid:function(tt,_html=''){
