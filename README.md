@@ -6,6 +6,7 @@ No dependencies pure JavaScript data table/grid with:
 - filtering (with text input or selecting from a list),
 - printing,
 - export to txt, csv, pdf, xls, etc.,
+- multiple rows selection,
 - custom row highlights,
 - show/hide columns,
 - grouping (with group header/footer),
