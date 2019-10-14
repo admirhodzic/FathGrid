@@ -114,6 +114,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>pageable</td><td>allow pagination</td><td>true</td></tr>
 <tr><td>printable</td><td>allow printing</td><td>true</td></tr>
 <tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
+<tr><td>multiselect</td><td>Allow selecting multiple rows. Adds select checkbox to the rows. Use <b>getSelectedItems</b> API to get selected data items.</td><td>false</td></tr>
 <tr><td>showFooter</td><td>add footer row to table</td><td>false</td></tr>
 <tr><td>showGroupFooter</td><td>add footer row after each group of records</td><td>false</td></tr>
 <tr><td>data</td><td>table data</td><td>data from HTML table content</td></tr>
@@ -144,6 +145,8 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
           first:"First",<br/>
           gotoPage:"Goto Page",<br/>
           loading:'Loading...',<br/>
+          selectRow:'Select Row',<br/>
+          showSelectedOnly:'Show Only Selected Rows',<br/>
         }<br/>
 </td></tr>
 </tbody>
