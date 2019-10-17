@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>FathGrid demo!</title>
+    
+    <!-- add jsPdf to enable PDF export -->
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
+
+    <!-- add chart.js to enable charting 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+    -->
+    <script src="../fathgrid.js"></script>
+  </head>
+  <body style="direction: rtl;text-align:right;" dir="rtl" class="rtl">
+      <div class="container-fluid">
+    <h1>FathGrid I18N</h1>
+
+    <div id="toolbar" style="">
+    <div style="display: flex;">
+      <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
+      <div style="flex-grow: 1">
+        
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Search</span>
+          </div>
+          <input onchange="t1.search(this.value)" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+        </div>        
+      </div>
+    </div>
+  </div>
+
+
+    
+    <table  id="table1" class="table table-hover table-bordered " >
+    <thead class="thead-light">
+    <tr><th>نطاق</th><th>بلد</th><th>مدينة</th><th>تعداد السكان</th><th>تأسيس</th></tr>
+    </thead>
+
+    <tbody>
+      <tr>
+      <td>1
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D9%85%D8%B5%D8%B1" title="مصر">مصر</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D9%82%D8%A7%D9%87%D8%B1%D8%A9" title="القاهرة">القاهرة</a>
+      </td>
+      <td>19,500,000<sup id="cite_ref-1" class="reference"><a href="#cite_note-1">[1]</a></sup>
+      </td>
+      <td>968 <a href=//wikipedia.org/wiki/%D8%AD%D9%82%D8%A8%D8%A9_%D8%B9%D8%A7%D9%85%D8%A9" title="حقبة عامة">CE</a><sup id="cite_ref-2" class="reference"><a href="#cite_note-2">[2]</a></sup>
+      </td>
+      </tr><tr>
+      <td>2
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%B9%D8%B1%D8%A7%D9%82" title="العراق">العراق</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A8%D8%BA%D8%AF%D8%A7%D8%AF" title="بغداد">بغداد</a>
+      </td>
+      <td>8,405,172
+      </td>
+      <td>762 CE<sup id="cite_ref-3" class="reference"><a href="#cite_note-3">[3]</a></sup>
+      </td>
+      </tr><tr>
+      <td>3
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9" title="السعودية">السعودية</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6" title="الرياض">الرياض</a>
+      </td>
+      <td>8,216,284
+      </td>
+      <td>715 BC<sup id="cite_ref-4" class="reference"><a href="#cite_note-4">[4]</a></sup>
+      </td>
+      </tr><tr>
+      <td>4
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%B3%D9%88%D8%AF%D8%A7%D9%86" title="السودان">السودان</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%AE%D8%B1%D8%B7%D9%88%D9%85" title="الخرطوم">الخرطوم</a>
+      </td>
+      <td>5,490,000
+      </td>
+      <td>1824 CE<sup id="cite_ref-5" class="reference"><a href="#cite_note-5">[5]</a></sup>
+      </td>
+      
+      </tr><tr>
+      <td>5
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%A3%D8%B1%D8%AF%D9%86" title="الأردن">الأردن</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%B9%D9%85%D8%A7%D9%86_(%D9%85%D8%AF%D9%8A%D9%86%D8%A9)" title="عمان (مدينة)">عمان</a>
+      </td>
+      <td>5,020,000
+      </td>
+      <td>7250  <a href=//wikipedia.org/wiki/%D8%AD%D9%82%D8%A8%D8%A9_%D8%B9%D8%A7%D9%85%D8%A9" title="حقبة عامة">حقبة عامة</a><sup id="cite_ref-Docslide_6-0" class="reference"><a href="#cite_note-Docslide-6">[6]</a></sup><sup id="cite_ref-7" class="reference"><a href="#cite_note-7">[7]</a></sup>
+      </td>
+      </tr><tr>
+      <td>6
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D9%85%D8%B5%D8%B1" title="مصر">مصر</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%A5%D8%B3%D9%83%D9%86%D8%AF%D8%B1%D9%8A%D8%A9" title="الإسكندرية">الإسكندرية</a>
+      </td>
+      <td>4,960,000
+      </td>
+      <td>332 BCE<sup id="cite_ref-8" class="reference"><a href="#cite_note-8">[8]</a></sup>
+      </td>
+      </tr><tr>
+      <td>7
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D9%83%D9%88%D9%8A%D8%AA" title="الكويت">الكويت</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D9%85%D8%AF%D9%8A%D9%86%D8%A9_%D8%A7%D9%84%D9%83%D9%88%D9%8A%D8%AA" title="مدينة الكويت">مدينة الكويت</a>
+      </td>
+      <td>4,860,000
+      </td>
+      <td>1613 CE<sup id="cite_ref-9" class="reference"><a href="#cite_note-9">[9]</a></sup>
+      </td>
+      </tr><tr>
+      <td>8
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D9%85%D8%BA%D8%B1%D8%A8" title="المغرب">المغرب</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%AF%D8%A7%D8%B1_%D8%A7%D9%84%D8%A8%D9%8A%D8%B6%D8%A7%D8%A1" title="الدار البيضاء">الدار البيضاء</a>
+      </td>
+      <td>4,410,000
+      </td>
+      <td>7th century BCE<sup id="cite_ref-JVL_10-0" class="reference"><a href="#cite_note-JVL-10">[10]</a></sup>
+      </td>
+      </tr><tr>
+      <td>9
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D8%B1%D8%A7%D8%AA_%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9_%D8%A7%D9%84%D9%85%D8%AA%D8%AD%D8%AF%D8%A9" title="الإمارات العربية المتحدة">الإمارات العربية المتحدة</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%AF%D8%A8%D9%8A" title="دبي">دبي</a>
+      </td>
+      <td>4,177,059
+      </td>
+      <td>1833 CE<sup id="cite_ref-11" class="reference"><a href="#cite_note-11">[11]</a></sup>
+      </td>
+      </tr><tr>
+      <td>10
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9" title="السعودية">السعودية</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%AC%D8%AF%D8%A9" title="جدة">جدة</a>
+      </td>
+      <td>3,975,000
+      </td>
+      <td>522 BCE<sup id="cite_ref-12" class="reference"><a href="#cite_note-12">[12]</a></sup>
+      </td>
+      </tr><tr>
+      <td>11
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%B3%D9%88%D8%B1%D9%8A%D8%A7" title="سوريا">سوريا</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%AD%D9%84%D8%A8" title="حلب">حلب</a>
+      </td>
+      <td>3,890,000
+      </td>
+      <td>5,000 BCE<sup id="cite_ref-13" class="reference"><a href="#cite_note-13">[13]</a></sup>
+      </td>
+      </tr><tr>
+      <td>11
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%AC%D8%B2%D8%A7%D8%A6%D8%B1" title="الجزائر">الجزائر</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%AC%D8%B2%D8%A7%D8%A6%D8%B1_(%D9%85%D8%AF%D9%8A%D9%86%D8%A9)" title="الجزائر (مدينة)">الجزائر</a>
+      </td>
+      <td>3,790,000
+      </td>
+      <td>944 CE<sup id="cite_ref-14" class="reference"><a href="#cite_note-14">[14]</a></sup>
+      </td>
+      </tr><tr>
+      <td>12
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D9%8A%D9%85%D9%86" title="اليمن">اليمن</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%B5%D9%86%D8%B9%D8%A7%D8%A1" title="صنعاء">صنعاء</a>
+      </td>
+      <td>3,425,000
+      </td>
+      <td>~500 BCE (possibly earlier)<sup id="cite_ref-EB_15-0" class="reference"><a href="#cite_note-EB-15">[15]</a></sup>
+      </td>
+      </tr><tr>
+      <td>13
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%B3%D9%88%D8%B1%D9%8A%D8%A7" title="سوريا">سوريا</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%AF%D9%85%D8%B4%D9%82" title="دمشق">دمشق</a>
+      </td>
+      <td>2,690,000
+      </td>
+      <td>6,300 BCE (possibly earlier)<sup id="cite_ref-16" class="reference"><a href="#cite_note-16">[16]</a></sup>
+      </td>
+      </tr><tr>
+      <td>14
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%B5%D9%88%D9%85%D8%A7%D9%84" title="الصومال">الصومال</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D9%85%D9%82%D8%AF%D9%8A%D8%B4%D9%88" title="مقديشو">مقديشو</a>
+      </td>
+      <td>2,590,000
+      </td>
+      <td>950 CE<sup id="cite_ref-17" class="reference"><a href="#cite_note-17">[17]</a></sup>
+      </td>
+      </tr><tr>
+      <td>15
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D9%84%D8%A8%D9%86%D8%A7%D9%86" title="لبنان">لبنان</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A8%D9%8A%D8%B1%D9%88%D8%AA" title="بيروت">بيروت</a>
+      </td>
+      <td>2,285,000
+      </td>
+      <td>500 BCE<sup id="cite_ref-18" class="reference"><a href="#cite_note-18">[18]</a></sup>
+      </td>
+      </tr><tr>
+      <td>16
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%AA%D9%88%D9%86%D8%B3" title="تونس">تونس</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%AA%D9%88%D9%86%D8%B3_(%D9%85%D8%AF%D9%8A%D9%86%D8%A9)" title="تونس (مدينة)">تونس</a>
+      </td>
+      <td>2,280,000
+      </td>
+      <td>814 BCE<sup id="cite_ref-19" class="reference"><a href="#cite_note-19">[19]</a></sup>
+      </td>
+      </tr><tr>
+      <td>17
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D9%85%D8%BA%D8%B1%D8%A8" title="المغرب">المغرب</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%B1%D8%A8%D8%A7%D8%B7" title="الرباط">الرباط</a>
+      </td>
+      <td>2,105,000
+      </td>
+      <td>1150 CE<sup id="cite_ref-20" class="reference"><a href="#cite_note-20">[20]</a></sup>
+      </td>
+      </tr><tr>
+      <td>18
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D8%B1%D8%A7%D8%AA_%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9_%D8%A7%D9%84%D9%85%D8%AA%D8%AD%D8%AF%D8%A9" title="الإمارات العربية المتحدة">الإمارات العربية المتحدة</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A3%D8%A8%D9%88_%D8%B8%D8%A8%D9%8A" title="أبو ظبي">أبو ظبي</a>
+      </td>
+      <td>1,840,000
+      </td>
+      <td>1761 CE<sup id="cite_ref-21" class="reference"><a href="#cite_note-21">[21]</a></sup>
+      </td>
+      <td>
+      </tr><tr>
+      <td>19
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9" title="السعودية">السعودية</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D9%85%D9%83%D8%A9" title="مكة">مكة</a>
+      </td>
+      <td>1,755,000
+      </td>
+      <td>1812 BCE<sup id="cite_ref-22" class="reference"><a href="#cite_note-22">[22]</a></sup><sup id="cite_ref-23" class="reference"><a href="#cite_note-23">[23]</a></sup>
+      </td>
+      </tr><tr>
+      <td>20
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D9%82%D8%B7%D8%B1" title="قطر">قطر</a>
+      </td>
+      <td><a href=//wikipedia.org/wiki/%D8%A7%D9%84%D8%AF%D9%88%D8%AD%D8%A9" title="الدوحة">الدوحة</a>
+      </td>
+      <td>1,745,000
+      </td>
+      <td>1823 CE<sup id="cite_ref-24" class="reference"><a href="#cite_note-24">[24]</a></sup>
+      </td>
+      </tr></tbody>
+  </table>
+  </div>
+  
+    <script>
+
+var t1=null;
+{
+
+  t1=FathGrid("table1",{
+      size:10,
+      language:'ar',rtl:true,
+      editable:true,
+      filterable:true,
+      sortable:true,
+      onChange:function(item,col,old,value){console.log("onChange:",item.id,col,old,value);return value==''?false:true;},
+      
+      selectColumns:true,
+      columns:[
+        {},
+        {
+        },
+        {
+        },
+        {
+        },
+        {
+        }
+      ],
+
+//      graphValues:(data)=>({title:"Songs by artist",labels:[... new Set(data.map(x=>x[3]))],values:[... new Set(data.map(x=>x[3]))].map(x=>data.filter(i=>i[3]==x).length)  })
+    });
+
+
+}
+    
+    </script>
+
+  </body>
+</html>
+
+
+

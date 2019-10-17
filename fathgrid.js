@@ -55,7 +55,8 @@ style.innerHTML = `
   .fathgrid-wrapper nav.active {background:#bcf;}
 
 
-  tr.selected td:nth-child(1) {border-left:solid 4px cornflowerblue;}
+  .fathgrid-wrapper[dir=ltr] tr.selected td:nth-child(1) {border-left:solid 4px cornflowerblue;}
+  .fathgrid-wrapper[dir=rtl] tr.selected td:nth-child(1) {border-right:solid 4px cornflowerblue;}
   tr.selected > td{background:#ddd;}
 
 `;
@@ -187,7 +188,7 @@ document.head.appendChild(style);
     var editinput=undefined;
 
     var renderPageinfo=function(){
-      return `<span class="page-info">${(config.page-1)*config.size}-${Math.min(filteredRecords,config.page*config.size)} ${config.lang.of} ${totalRecords!=filteredRecords?`${filteredRecords}/`:''}${totalRecords}</span>`;
+      return `<span class="page-info">${(config.page-1)*config.size+1}-${Math.min(filteredRecords,config.page*config.size)} ${config.lang.of} ${totalRecords!=filteredRecords?`${filteredRecords}/`:''}${totalRecords}</span>`;
     }
     var renderPaginator=function(){
       var rr=`&#x23f5;`,ll=`&#x23F4;`;
