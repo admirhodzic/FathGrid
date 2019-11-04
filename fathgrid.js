@@ -1,4 +1,4 @@
-;var style = document.createElement('style');
+var style = document.createElement('style');
 style.setAttribute("id","FathGrid_styles");
 style.innerHTML = `
   .fathgrid-wrapper .fathgrid thead th {padding:0.5em 1.5em;}  
@@ -77,7 +77,7 @@ document.head.appendChild(style);
         exportable:true,
         printable:true,
         graphType:'line',
-        graphValues:this.undefined,
+        graphValues:undefined,
         showFooter:false,
         selectColumns:false,
         showGroupFooter:false,
@@ -181,9 +181,9 @@ document.head.appendChild(style);
     }
     const graphCanvasHTML=`<canvas style="width:100%;height:${config.graphHeight};" ></canvas>`;
 
-    var table=document.getElementById(id)||document.body.appendChild(table=document.createElement("TABLE"));
-    var tbody=table.querySelector(":scope tbody") || table.appendChild(tbody=document.createElement("TBODY"));
-    var thead=table.querySelector(":scope thead") || table.insertBefore(thead=document.createElement("THEAD"),tbody);
+    var table=document.getElementById(id)||document.body.appendChild(document.createElement("TABLE"));
+    var tbody=table.querySelector(":scope tbody") || table.appendChild(document.createElement("TBODY"));
+    var thead=table.querySelector(":scope thead") || table.insertBefore(document.createElement("THEAD"),tbody);
     
     var editinput=undefined;
 
@@ -212,6 +212,7 @@ document.head.appendChild(style);
     
     var getSort=function(){      return config.sort;    };
     var selectRow=function(rownum,selected=true){
+      var x;
       if(selected) {
         if(!config.multiselect) selected_rows=[];
         selected_rows.push(data[rownum-1]);
@@ -242,7 +243,7 @@ document.head.appendChild(style);
     };
 
     var chart=undefined;
-    var wrapper=this.document.createElement("DIV");wrapper.classList.add("fathgrid-wrapper");
+    var wrapper=document.createElement("DIV");wrapper.classList.add("fathgrid-wrapper");
     if(config.rtl) wrapper.setAttribute("dir","rtl");
     
     table.parentNode.insertBefore(wrapper,table);
@@ -313,12 +314,12 @@ document.head.appendChild(style);
         }
         else tfoot.innerHTML='<tr></tr>';
         if(config.multiselect) {
-          var td=this.document.createElement("TH");
+          var td=document.createElement("TH");
           td.dataset.i=-1;
           td.classList.add("selected-count");
           tfoot.appendChild(td);
         }
-        config.columns.forEach((c,idx)=>{var td=this.document.createElement("TH");td.dataset.i=idx;tfoot.appendChild(td);if(c.visible===false) td.style.display='none';if(c.printable===false) td.classList.add('noprint');  (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>td.classList.add(c1));});
+        config.columns.forEach((c,idx)=>{var td=document.createElement("TH");td.dataset.i=idx;tfoot.appendChild(td);if(c.visible===false) td.style.display='none';if(c.printable===false) td.classList.add('noprint');  (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>td.classList.add(c1));});
         
       }
     };
@@ -400,6 +401,7 @@ document.head.appendChild(style);
                 gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
                 if(c.printable===false) gtd.classList.add('noprint');
                 (c.class||'').split(' ').filter(x=>x!='').forEach(c=>gtd.classList.add(c));
+                var xx;
                 if((xx=((typeof c.groupFooter=='function')?c.groupFooter(groupdata,c.name||i,gtd,config.decimals):(c.groupFooter||null)))!==null) gtd.innerHTML='<b>'+xx+'</b>';
               });
             }
@@ -411,7 +413,7 @@ document.head.appendChild(style);
             groupdata=[];
           }
 
-          var r=document.createElement("tr");
+          var r=document.createElement("tr"),cs;
           r.dataset.id=dr.id;
           r.dataset.rownum=dr.rownum;
           if(typeof config.rowClass=='function' && (cs=config.rowClass(dr,idx)) && typeof cs=='string') cs.split(" ").forEach(c=>(c!=''?r.classList.add(c):c));
@@ -447,6 +449,7 @@ document.head.appendChild(style);
           gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
           (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>gtd.classList.add(c1));
           if(c.printable===false) gtd.classList.add('noprint');
+          var xx;
           if((xx=((typeof c.groupFooter=='function')?c.groupFooter(groupdata,c.name||i,gtd,config.decimals):(c.groupFooter||null)))!==null) gtd.innerHTML='<b>'+xx+'</b>';
         });
         groupdata=[];
@@ -488,6 +491,7 @@ document.head.appendChild(style);
       })});
 
       if(tfoot!==null){
+        var xx;
         tfoot.querySelectorAll(":scope th").forEach((td,idx)=>{if(undefined!==config.columns[idx].footer) 
           if((xx=((typeof config.columns[idx].footer==='function')?config.columns[idx].footer(fdata,config.columns[idx].name||idx,td,config.decimals):config.columns[idx].footer||null))!==null) td.innerHTML=xx;
         });
@@ -514,6 +518,7 @@ document.head.appendChild(style);
       if(config.sortBy!==undefined) config.sort=[...(config.sortBy.filter(x=>!config.sort.includes(x))), ...config.sort];
 
       data.sort((a,b)=>{
+        var a1,b1;
         for(var f=0;f<config.sort.length;f++){
           var i1=Math.abs(config.sort[f])-1,ds=config.sort[f]<0;
           a1=('number'==typeof vv2(a,i1))?(vv2(a,i1)):vv2(a,i1).replace(/(<([^>]+)>)/gi,"");
@@ -535,7 +540,7 @@ document.head.appendChild(style);
 
     thead.innerHTML='';
     if(thead.querySelectorAll(":scope th").length===0) {
-      var tr=document.createElement("TR");
+      var tr=document.createElement("TR"),th;
       thead.appendChild(tr);
       if(config.multiselect) {
         tr.innerHTML=`<th class="multiselect"></th>`;
@@ -543,7 +548,7 @@ document.head.appendChild(style);
       config.columns.forEach((c,i)=>{tr.appendChild(th=document.createElement("TH"));th.innerText=c.header||c.name;if(c.visible===false) th.style.display="none";th.dataset.name=c.name||i;if(c.printable===false) th.classList.add('noprint');(c.class||'').split(' ').filter(x=>x!='').forEach(c1=>th.classList.add(c1));});
     }
 
-    if(config.sortBy!==this.undefined) {config.sortBy.map(c=>sort(c,false,true,false));}
+    if(config.sortBy!==undefined) {config.sortBy.map(c=>sort(c,false,true,false));}
 
     if(config.sortable) thead.querySelectorAll("tr th").forEach((th,i) => {th.style.cursor="pointer";th.addEventListener('click',function(e){sort(i+1,undefined,e.shiftKey);stop(e);clearSelection()});});
 
@@ -556,7 +561,7 @@ document.head.appendChild(style);
           var f=document.createElement("TH");
           var i=undefined;
           if(config.columns[idx].filterable===undefined || config.columns[idx].filterable!==false){
-            if(config.columns[idx]!==undefined && config.columns[idx].filter!==this.undefined) {
+            if(config.columns[idx]!==undefined && config.columns[idx].filter!==undefined) {
                 i=document.createElement("SELECT");i.add(document.createElement("OPTION"));
                 //i.setAttribute("multiple","multiple");
                 var ff=config.columns[idx].filter;
@@ -686,16 +691,16 @@ document.head.appendChild(style);
             }
             break;
           case 13: case 9:
-            {
-              stop(e);
-              editNext(rownum,col);
-            }
+            stop(e);
+            editNext(rownum,col);
             break;
           case 39://right
             if(e.shiftKey && el.nextSibling!==null) {
               stop(e);
               editNext(rownum,col);
             }
+            break;
+          default:
             break;
         }
       });
@@ -734,18 +739,19 @@ document.head.appendChild(style);
         return TEMPLATE_XLS.replace(/{(\w+)}/g, (x, y) => parameters[y]);        
       }
       if(fmt=='pdf'){
+        const jsPDF=win.jsPDF;
         var doc = new jsPDF('p','cm','A4');  
         doc.setFontSize(9);
         doc.setLineWidth(0.025);
         var x=1;var y=1;var ii=0,pg=1;
         var cw=[],cww=0;table.querySelectorAll(":scope thead tr:nth-child(1) th").forEach(x=>{cww+=x.clientWidth;cw.push(x.clientWidth)});
         table.querySelectorAll(":scope thead tr:nth-child(1) th").forEach(f=>{
-          var w=doc.getTextWidth(f.innerText);
+          
           if(cw[ii]) doc.text(f.innerText,x,y,{maxWidth:(cw[ii]/cww)*20-0.1});
           x+=(cw[ii++]/cww)*20;
         });
         y+=0.3;
-        var lastgroup=null,groupdata=[];
+        var lastgroup=null,groupdata=[],gg;
         data.forEach((r,idx)=>{
           if(typeof config.groupOn==='function' && lastgroup!==(gg=config.groupOn(r,idx))){
             doc.setFontType("bold")
@@ -834,7 +840,7 @@ document.head.appendChild(style);
       if(wrapper.querySelector(":scope .graphplaceholder").style.display=='block') {wrapper.querySelector(":scope .graphplaceholder").style.display='none';return;}
       wrapper.querySelector(":scope .graphplaceholder").style.display='block';
       var ci=0;
-      chartConfig={
+      var chartConfig={
         type: config.graphType,
         data: {
             labels: dd.labels,
@@ -855,6 +861,7 @@ document.head.appendChild(style);
             }
         }
       };
+      const Chart=win.Chart;
       chart = new Chart(ctx, chartConfig);
   
     }
@@ -928,3 +935,4 @@ document.head.appendChild(style);
   
 })(typeof window !== "undefined" ? window : this));
 
+//export default ((typeof window !== "undefined" ? window : this).FathGrid);
