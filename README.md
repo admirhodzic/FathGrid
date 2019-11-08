@@ -9,6 +9,7 @@ No dependencies pure JavaScript data table/grid with:
 - multiple rows selection,
 - custom row highlights,
 - show/hide columns,
+- columns resizing,
 - grouping (with group header/footer),
 - in-place data edit mode,
 - inline data, JSON fetching or server-side processing,
@@ -114,6 +115,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>editable</td><td>allow edits</td><td>true</td></tr>
 <tr><td>pageable</td><td>allow pagination</td><td>true</td></tr>
 <tr><td>printable</td><td>allow printing</td><td>true</td></tr>
+<tr><td>resizable</td><td>allow column resizing</td><td>true</td></tr>
 <tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
 <tr><td>multiselect</td><td>Allow selecting multiple rows. Adds select checkbox to the rows. Use <b>getSelectedItems</b> API to get selected data items.</td><td>false</td></tr>
 <tr><td>showFooter</td><td>add footer row to table</td><td>false</td></tr>
@@ -212,7 +214,7 @@ To enable PDF export, include jsPDF.js in your page and PDF export functionality
   
   .setData(newData) // sets new table data, possibly after delete or creating a new record
 
-  .export(format, filename) //export data
+  .exportData(format, filename) //export data
   
   .render() //redraw
   

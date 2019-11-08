@@ -57,14 +57,40 @@ style.innerHTML = `
 
   .fathgrid-wrapper[dir=ltr] tr.selected td:nth-child(1) {border-left:solid 4px cornflowerblue;}
   .fathgrid-wrapper[dir=rtl] tr.selected td:nth-child(1) {border-right:solid 4px cornflowerblue;}
-  tr.selected > td{background:#ddd;}
+  .fathgrid-wrapper tr.selected > td{background:#ddd;}
+  .fathgrid-wrapper .fathgrid-col-divider:hover {background-color:rgba(0,0,0,0.4);}
+  .fathgrid-wrapper .fathgrid-col-divider {
+    position:absolute;
+    top:0;
+    z-index:110;
+    right:-2px;
+    width:5px;
+    user-select:none;
+    cursor:col-resize;
+  }
 
 `;
 document.head.appendChild(style);
 //icons from https://icomoon.io/app/#/select
 
-((function(win){
-  win.FathGrid=function(id,_config){
+
+;(function (root, factory) {
+
+  if (typeof define === 'function' && define.amd) {
+    define(factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.FathGrid = factory();
+    root.FathGrid.SUM=function(data,cname,el,_decimals=2){return (data.map(x=>parseFloat(x[cname].replace('$',''))).reduce((x,s)=>x+s,0)).toFixed(_decimals)}
+    root.FathGrid.AVG=function(data,cname,el,_decimals=2){return data.length?(data.map(x=>parseFloat(x[cname].replace('$',''))).reduce( ( p, c ) => p + c, 0 ) / data.length).toFixed(_decimals):null;}
+    root.FathGrid.MIN=function(data,cname,el,_decimals=2){var y=data[0][cname];if( typeof y=='number') return Math.min(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y<x[cname])?y:x[cname]));return y;}
+    root.FathGrid.MAX=function(data,cname,el,_decimals=2){var y=data[0][cname];if( typeof y=='number') return Math.max(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y>x[cname])?y:x[cname]));return y;}
+    }
+
+}((typeof window !== "undefined" ? window : this), function () {
+
+  return function(id,_config){
     var config={
         id:id, 
         size:20, 
@@ -99,6 +125,7 @@ document.head.appendChild(style);
         graphHeight:'200px',
         template:'{tools}{info}{graph}{table}{pager}',
         language:'auto',
+        resizable:true,
         ..._config
     };
     var langs={
@@ -891,6 +918,40 @@ document.head.appendChild(style);
 
 
     render();
+
+
+    if(config.resizable) {
+      var currCol=undefined,nextCol=undefined,startX=undefined,currW,nextW;
+      thead.querySelectorAll(":scope tr:nth-child(1) th").forEach(h=>{
+        h.style.position='relative';
+        var div=document.createElement("div");
+        div.classList.add('fathgrid-col-divider');
+        div.style.height=thead.offsetHeight+'px';
+        h.appendChild(div);
+        div.addEventListener('click',function(e){stop(e);});
+        function getPadding(el){
+          if(window.getComputedStyle(el, null).getPropertyValue('box-sizing')=='border-box') return 0;
+          return parseInt(window.getComputedStyle(el, null).getPropertyValue('padding-left'))+parseInt(window.getComputedStyle(el, null).getPropertyValue('padding-right'));
+        }
+        div.addEventListener('mousedown',e=>{
+          currCol=h;
+          nextCol=h.nextElementSibling;
+          startX=e.pageX;
+          currW=h.offsetWidth - getPadding(h);
+          if(nextCol!==null) nextW=nextCol.offsetWidth - getPadding(nextCol);
+        });
+      });
+      document.addEventListener('mouseup',e=>{        currCol=undefined; nextCol=undefined;     });
+      document.addEventListener('mousemove',e=>{
+        console.log(e.button);
+        if(currCol!==undefined){
+          var d=e.pageX-startX;
+          if(nextCol) nextCol.style.width=(nextW-d)+'px';
+          currCol.style.width=(currW+d)+'px';
+        }
+      });
+    }
+
     return {
       id:id,
       render:render,
@@ -909,7 +970,7 @@ document.head.appendChild(style);
       getData:function(){return data.map(x=>x);},
       setData:function(newdata){data=[];newdata.map((x,idx)=>{x.rownum=idx+1;data.push(x)});render();},
       getExportData:getExportData,
-      export:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt=='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
+      exportData:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt=='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
       search:function(q){if(q===undefined) return config.q; config.q=q;render();},
       getSelectedItem:function(){return selected_rows.length?selected_rows[0]:null;},
       getSelectedItems:getSelectedItems,
@@ -928,11 +989,11 @@ document.head.appendChild(style);
       refresh:renderBody
     }
   }
-  win.FathGrid.SUM=function(data,cname,el,_decimals=2){return (data.map(x=>parseFloat(x[cname].replace('$',''))).reduce((x,s)=>x+s,0)).toFixed(_decimals)}
-  win.FathGrid.AVG=function(data,cname,el,_decimals=2){return data.length?(data.map(x=>parseFloat(x[cname].replace('$',''))).reduce( ( p, c ) => p + c, 0 ) / data.length).toFixed(_decimals):null;}
-  win.FathGrid.MIN=function(data,cname,el,_decimals=2){var y=data[0][cname];if( typeof y=='number') return Math.min(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y<x[cname])?y:x[cname]));return y;}
-  win.FathGrid.MAX=function(data,cname,el,_decimals=2){var y=data[0][cname];if( typeof y=='number') return Math.max(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y>x[cname])?y:x[cname]));return y;}
   
-})(typeof window !== "undefined" ? window : this));
+}));
+
+
+
+
 
 //export default ((typeof window !== "undefined" ? window : this).FathGrid);
