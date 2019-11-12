@@ -116,6 +116,7 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>pageable</td><td>allow pagination</td><td>true</td></tr>
 <tr><td>printable</td><td>allow printing</td><td>true</td></tr>
 <tr><td>resizable</td><td>allow column resizing</td><td>true</td></tr>
+<tr><td>restoreColumns</td><td>automatically restore column widths from previous user session with the same table</td><td>false</td></tr>
 <tr><td>sortable</td><td>Allow sorting. Click on column header to sort, hold shift to add column to multisort.</td><td>true</td></tr>
 <tr><td>multiselect</td><td>Allow selecting multiple rows. Adds select checkbox to the rows. Use <b>getSelectedItems</b> API to get selected data items.</td><td>false</td></tr>
 <tr><td>showFooter</td><td>add footer row to table</td><td>false</td></tr>
@@ -170,6 +171,7 @@ Columns definition is an array of objects defining column appereance and functio
 <tr><td>type</td><td>input type for cell editor. supported values are: text, color, image, date, email, number, checkbox, textarea.</td><td></td></tr>
 <tr><td>pattern</td><td>regular expression to check the input value against when editing cell content</td><td></td></tr>
 <tr><td>title</td><td>help string for input in edit mode</td><td></td></tr>
+<tr><td>width</td><td>column width. if value is number, in pixel units, or set velue to string with custom units (eg. '10rem').</td><td>auto</td></tr>
 <tr><td>printable</td><td>include this column in print</td><td>true</td></tr>
 <tr><td>listOfValues</td><td>array of selectable values when editing</td><td></td></tr>
 <tr><td>class</td><td>string of CSS classes to add to column cells. Eg. 'text-right text-bold'</td><td></td></tr>
@@ -237,6 +239,8 @@ To enable PDF export, include jsPDF.js in your page and PDF export functionality
   .deleteRow(rownum) //deletes row specified by rownum parameter (1 = first row, 2= second row, ...)
 
   .insertRow(rownum, item) //inserts new item into row number specified by rownum parameter (1=first row)
+
+  .restoreColumns() //restores column widths from local storage of previous session on this table
 
   
  

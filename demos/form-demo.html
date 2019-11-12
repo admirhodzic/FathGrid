@@ -44,15 +44,17 @@
     </div>
 
 
-    <div class="row">
-      <div class="col-md-8">
+    <div class="row" style="position: relative;">
+      <div class="col-md-12">
           <table  id="table1" class="table table-bordered ">       <thead class="thead-light"></thead> </table>
       </div>
-      <div class="col-md-4">
+      <div id="form1" class="" style="position:absolute;right: 1em; width: 0;transition-duration: 0.5s;overflow: hidden;">
 
         <div class="modal-content">
           <div class="modal-header">
+            
             <h5 class="modal-title">Form</h5>
+            <button type="button" class="close" onclick="document.querySelector('#form1').style.width=0">&times;</button>
           </div>
           <div class="modal-body">
               <div id="form-container">(select record)</div>
@@ -62,9 +64,6 @@
             <button type="button" class="btn btn-primary" onclick="f1.save()">Save</button>
           </div>
         </div>        
-        
-
-
       </div>
       
     </div>
@@ -102,6 +101,7 @@
                   save:(item2)=>{console.log("save",item2,item.rownum);Object.keys(item).forEach(k=>{item[k]=item2[k]});t1.refresh();t1.selectRow(item.rownum);},
 
                 });
+                document.querySelector("#form1").style.width="30rem";
               },
 
               columns:[

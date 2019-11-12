@@ -125,6 +125,7 @@ document.head.appendChild(style);
         graphHeight:'200px',
         template:'{tools}{info}{graph}{table}{pager}',
         language:'auto',
+        restoreColumns:false,
         resizable:true,
         ..._config
     };
@@ -275,8 +276,11 @@ document.head.appendChild(style);
     
     table.parentNode.insertBefore(wrapper,table);
 
-    thead.querySelectorAll("tr th").forEach((th,i) => {if(undefined===config.columns[i]) config.columns[i]={};if(th.innerText==='')th.innerText=config.columns[i].header||config.columns[i].name; else config.columns[i].header=th.innerText;});
-
+    thead.querySelectorAll(":scope tr th").forEach((th,i) => {
+      if(undefined===config.columns[i]) config.columns[i]={};
+      if(th.innerText==='') th.innerText=config.columns[i].header||config.columns[i].name; 
+      else config.columns[i].header=th.innerText;
+    });
 
     const parts={
       graph:`<div class="graphplaceholder">${graphCanvasHTML}</div>`,
@@ -574,6 +578,10 @@ document.head.appendChild(style);
       }
       config.columns.forEach((c,i)=>{tr.appendChild(th=document.createElement("TH"));th.innerText=c.header||c.name;if(c.visible===false) th.style.display="none";th.dataset.name=c.name||i;if(c.printable===false) th.classList.add('noprint');(c.class||'').split(' ').filter(x=>x!='').forEach(c1=>th.classList.add(c1));});
     }
+    thead.querySelectorAll(":scope th").forEach((th,i)=>{
+      if(config.columns[i].width!==undefined) th.style.width=(''+config.columns[i].width)+(typeof config.columns[i].width==='number'?'px':'');
+    });
+
 
     if(config.sortBy!==undefined) {config.sortBy.map(c=>sort(c,false,true,false));}
 
@@ -943,13 +951,24 @@ document.head.appendChild(style);
       });
       document.addEventListener('mouseup',e=>{        currCol=undefined; nextCol=undefined;     });
       document.addEventListener('mousemove',e=>{
-        console.log(e.button);
         if(currCol!==undefined){
           var d=e.pageX-startX;
           if(nextCol) nextCol.style.width=(nextW-d)+'px';
           currCol.style.width=(currW+d)+'px';
+          var s={};
+          thead.querySelectorAll(":scope tr:nth-child(1) th").forEach(c=>s[c.cellIndex]=c.style.width);
+          localStorage.setItem("__fathgrid_columns_"+config.id,JSON.stringify(s));
         }
       });
+      if(config.restoreColumns){
+        var s=localStorage.getItem("__fathgrid_columns_"+config.id);
+        if(s!==null){
+          try{
+            s=JSON.parse(s);
+            thead.querySelectorAll(":scope tr:nth-child(1) th").forEach(c=>c.style.width=s[c.cellIndex]);
+          }catch(ex){}
+        }
+      }
     }
 
     return {
