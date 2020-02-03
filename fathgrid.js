@@ -93,8 +93,8 @@ document.head.appendChild(style);
     root.FathGrid.COUNT=function(data,cname,el,_decimals=2){var y=[];return data.length?(data.filter(x=>{if(y.includes(x[cname])) return false; else y.push(x[cname]);return true;}).length):null;}
     root.FathGrid.FIRST=function(data,cname,el,_decimals=2, fnValue=undefined){return data.length?(fnValue!==undefined?(fnValue(data.find(x=>true))):((data.find(x=>true)[cname]))):null;}
     root.FathGrid.LAST=function(data,cname,el,_decimals=2, fnValue=undefined){return data.length?(fnValue!==undefined?(fnValue(data.slice(-1).find(x=>true))):((data.slice(-1).find(x=>true)[cname]))):null;}
-    root.FathGrid.MIN=function(data,cname,el,_decimals=2, fnValue=undefined){var y=data[0][cname];if( typeof y=='number') return Math.min(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y<x[cname])?y:x[cname]));return y;}
-    root.FathGrid.MAX=function(data,cname,el,_decimals=2, fnValue=undefined){var y=data[0][cname];if( typeof y=='number') return Math.max(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y>x[cname])?y:x[cname]));return y;}
+    root.FathGrid.MIN=function(data,cname,el,_decimals=2, fnValue=undefined){var y=data[0][cname];if( typeof y==='number') return Math.min(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y<x[cname])?y:x[cname]));return y;}
+    root.FathGrid.MAX=function(data,cname,el,_decimals=2, fnValue=undefined){var y=data[0][cname];if( typeof y==='number') return Math.max(...(data.map(x=>x[cname]))).toFixed(_decimals);data.map(x=>y=((y>x[cname])?y:x[cname]));return y;}
     root.FathGrid.EXPR=function(item,col){var x=(col.expr||'').replace(new RegExp('(' + Object.keys(item||{}).join('|') + ')', 'g'), (m, $1) => ( (typeof (v=((item[$1] || (m)))) === 'number')?("("+v+")"):("('"+v+"')")  )); try{return eval(x);}catch(ex){console.error("expr",x,ex) }}
     }
 
@@ -256,7 +256,7 @@ document.head.appendChild(style);
         <ul class="pagination" >
           <li class="page-item"><a class="page-link firstpage" title="${config.lang.first}" href="#">&#x2503;${config.rtl?rr:ll}</a></li>
           <li class="page-item"><a class="page-link prevpage" title="${config.lang.previous}" href="#">${config.rtl?rr:ll}</a></li>
-          <li class="page-item active"><a class="page-link gotopage" title="${config.lang.gotoPage}" href="javascript:void(0)">${config.page} / ${config.size===0?1:Math.floor((filteredRecords+(config.size-1))/config.size)}</a></li>
+          <li class="page-item active"><a class="page-link gotopage" title="${config.lang.gotoPage}" href="javascript:void(0)">${config.page} / ${Math.floor((filteredRecords+(config.size-1))/config.size)}</a></li>
           <li class="page-item"><a class="page-link nextpage" title="${config.lang.next}" href="#">${config.rtl?ll:rr}</a></li>
           <li class="page-item"><a class="page-link lastpage" title="${config.lang.last}" href="#">${config.rtl?ll:rr}&#x2503;</a></li>
         </ul>
@@ -475,7 +475,7 @@ document.head.appendChild(style);
         return ok;
       });
       filteredRecords=fdata.length;
-      return config.size===0?fdata:fdata.slice((config.page-1)*config.size,config.page*config.size);
+      return config.size===0 ? fdata : fdata.slice((config.page-1)*config.size,config.page*config.size);
     }
 
     var _renderData=[],_graphData=[];
@@ -505,10 +505,10 @@ document.head.appendChild(style);
               });
               _graphData.push(_grpFoot);
             }
-            if(config.showGroupHeader || config.columns.find((c,i)=>c.visible===false && config._gr.includes(i+1))){
+            if(config.showGroupHeader || config.columns.find((c,i)=>c.visible===false && config._gr && config._gr.includes(i+1))){
                 tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-header");gtr.appendChild(gtd=document.createElement("TD"));
                 gtd.setAttribute("colspan",config.columns.filter(x=>x.visible!==false).length+(config.multiselect?1:0));
-                var h = config.columns.filter((c,i)=>c.visible===false && config._gr && config._gr.includes(i+1)).map(c=>c.value?c.value(dr,c):dr[c.name]).join(', ');
+                var h = config.columns.filter((c,i)=>c.visible===false && config._gr.includes(i+1)).map(c=>c.value?c.value(dr,c):dr[c.name]).join(', ');
                 gtd.innerHTML=`${h||gg}`;
             }
             lastgroup=gg;
@@ -566,11 +566,11 @@ document.head.appendChild(style);
         tbody.appendChild(gtr=document.createElement("TR"));gtr.classList.add("group-footer");gtr.classList.add("table-total");
         config.columns.forEach((c,i)=>{
           gtr.appendChild(gtd=document.createElement("TD"));gtd.style.display=c.visible!==false?gtd.style.display:'none';
-          (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>gtd.classList.add(c1));
+          (c.class||'').split(' ').filter(x=>x!=='').forEach(c1=>gtd.classList.add(c1));
           if(c.printable===false) gtd.classList.add('noprint');
           var xx;
           if(config._gr && !config._gr.includes(i+1))
-            if((xx=((typeof c.groupFooter=='function')?c.groupFooter(dd,c.name||i,gtd,config.decimals, c.value):(c.groupFooter||null)))!==null) gtd.innerHTML=''+xx+'';
+            if((xx=((typeof c.groupFooter==='function')?c.groupFooter(dd,c.name||i,gtd,config.decimals, c.value):(c.groupFooter||null)))!==null) gtd.innerHTML=''+xx+'';
         });
       }
 
@@ -602,7 +602,7 @@ document.head.appendChild(style);
       tbody.querySelectorAll("td").forEach(x=>{x.addEventListener("click",function(e){
         var tr=e.srcElement.parentElement.closest("TR");
         if(config.multiselect && x.classList.contains("multiselect")){
-          if(e.srcElement==x) x.querySelector(":scope input.selector").click();
+          if(e.srcElement===x) x.querySelector(":scope input.selector").click();
         }
         else{
             if(tr.classList.contains("group-footer")){
@@ -722,7 +722,7 @@ document.head.appendChild(style);
 
             i.dataset.i=idx;
             i.title=`Filter value for field ${config.columns[idx].name}`;
-            (config.columns[idx].filterInputClass||'').split(' ').filter(x=>x!='').forEach(c1=>i.classList.add(c1))
+            (config.columns[idx].filterInputClass||'').split(' ').filter(x=>x!=='').forEach(c1=>i.classList.add(c1))
             f.append(i);
           }
           if(c.printable===false) f.classList.add("noprint");
@@ -735,7 +735,7 @@ document.head.appendChild(style);
 
 
     const stop=function(e){e.preventDefault();e.stopPropagation();};
-    const isChecked=function(v){return v==config.lang.yes||v=='yes'||v=='true'||v===true||v=='on'||v==1||v=='1';};
+    const isChecked=function(v){return v===config.lang.yes||v==='yes'||v==='true'||v===true||v==='on'||v===1||v==='1';};
 
     const editNext=function(rownum,col){
       var r=rownum,c=col;
@@ -765,13 +765,13 @@ document.head.appendChild(style);
     const editCell=function(rownum,col){
 
       if(editinput!==undefined) {
-        var newval=editinput.value;//editinput.value!=''?editinput.value:editinput.dataset.originalvalue;
+        var newval=editinput.value;//editinput.value!==''?editinput.value:editinput.dataset.originalvalue;
 
         if(!editinput.checkValidity()) return editinput.classList.add("error");
 
         var old=vv(data[editinput.dataset.rownum-1],editinput.dataset.col-1);
         ss(editinput.dataset.rownum-1,editinput.dataset.col-1,newval);
-        if(old==newval || false!==config.onChange(data[editinput.dataset.rownum-1],editinput.dataset.col,old,newval)){
+        if(old===newval || false!==config.onChange(data[editinput.dataset.rownum-1],editinput.dataset.col,old,newval)){
           if(editinput) editinput.remove();editinput=undefined;
           renderBody();
         }else {
@@ -809,7 +809,7 @@ document.head.appendChild(style);
 
       i.addEventListener("change",function(e){
         var rownum=e.srcElement.dataset.rownum,col=e.srcElement.dataset.col;
-        if(vv(data[rownum-1],col-1)!=e.srcElement.value) {
+        if(vv(data[rownum-1],col-1)!==e.srcElement.value) {
             if(!e.srcElement.checkValidity()) return e.srcElement.classList.add("error");
             ss(rownum-1,col-1,e.srcElement.value);
             if(false===config.onChange(data[rownum-1],col,vv(data[rownum-1],col-1),e.srcElement.value)){
@@ -865,7 +865,7 @@ document.head.appendChild(style);
       config.onInitInput(data[rownum-1],column.name||col,el);
     };
     const downloadFile=function(blob,filename,type="text/plain"){
-        if(typeof blob=='object') {blob.save(filename);return;}
+        if(typeof blob==='object') {blob.save(filename);return;}
         const url = window.URL.createObjectURL(new Blob([blob], { type }));
         const a = document.createElement('a');
         a.style.display = 'none';
@@ -929,7 +929,7 @@ document.head.appendChild(style);
               x=1;
               lines=0;ii=0;
               config.columns.forEach((c,ic)=>{
-                var ct=''+(typeof c.groupFooter=='function'?c.groupFooter(groupdata,c.name||ic,null,config.decimals,c.value):(undefined===c.groupFooter?'':c.groupFooter));
+                var ct=''+(typeof c.groupFooter==='function'?c.groupFooter(groupdata,c.name||ic,null,config.decimals,c.value):(undefined===c.groupFooter?'':c.groupFooter));
                 var w=doc.getTextWidth(ct);
                 doc.text( ct  ,x,y,{maxWidth:(cw[ii]/cww)*20-0.1});
                 lines=Math.max(lines,w/((cw[ii]/cww)*20-0.1));
@@ -976,7 +976,7 @@ document.head.appendChild(style);
           doc.line(1,y-.4,20,y-.4);
           x=1;ii=0;lines=0;
           config.columns.forEach((c,ic)=>{
-            var ct=''+(typeof c.groupFooter=='function'?c.groupFooter(groupdata,c.name||ic,null,config.decimals,c.value):(undefined===c.groupFooter?'':c.groupFooter));
+            var ct=''+(typeof c.groupFooter==='function'?c.groupFooter(groupdata,c.name||ic,null,config.decimals,c.value):(undefined===c.groupFooter?'':c.groupFooter));
             var w=doc.getTextWidth(ct);
             doc.text( ct  ,x,y,{maxWidth:(cw[ii]/cww)*20-0.1});
             lines=Math.max(lines,w/((cw[ii]/cww)*20-0.1));
@@ -1003,16 +1003,21 @@ document.head.appendChild(style);
       chart.data={
         labels: dd.labels,
         datasets: Array.isArray(dd.values[0])?
-            dd.values.map((x,idx)=>({label:dd.title[idx],data:x,borderWidth:1,fill:false,
-                          backgroundColor: config.graphType=='pie'?x.map((v,i)=>colors[ci++ % colors.length]):colors[ci],
-            }))
+            dd.values.map((x,idx)=>(
+                {label:dd.title[idx],
+                data:x,
+                borderWidth:1,fill:false,
+                  backgroundColor: config.graphType==='pie'?x.map((v,i)=>colors[i % colors.length]):colors[ci],
+                  borderColor: config.graphType==='pie'?x.map((v,i)=>colors[i % colors.length]):colors[ci++],
+                }
+            ))
             :
             [{
               label: dd.title,
               data: dd.values,
               borderWidth: 1,
-              backgroundColor: config.graphType=='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci],
-              borderColor: config.graphType=='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci++],
+              backgroundColor: config.graphType==='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci],
+              borderColor: config.graphType==='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci++],
             }]
       };
       chart.update({duration:0});
@@ -1030,16 +1035,16 @@ document.head.appendChild(style);
             wrapper.querySelector(":scope .fathgrid-graph2-nav").classList.add('active');
             config.graphType=(['none','line','bar','pie'])[t];
             config.graphValues=function(fd){return {
-                title: y2!='' ? [config.columns[y].header,config.columns[y2].header]: config.columns[y].header,
+                title: y2!=='' ? [config.columns[y].header,config.columns[y2].header]: config.columns[y].header,
                 labels:fd.map(i=>i[config.columns[x].name]),
-                values: y2!='' ? [fd.map(i=>i[config.columns[y].name]),fd.map(i=>i[config.columns[y2].name])] : fd.map(i=>i[config.columns[y].name]),
+                values: y2!=='' ? [fd.map(i=>i[config.columns[y].name]),fd.map(i=>i[config.columns[y2].name])] : fd.map(i=>i[config.columns[y].name]),
             }};
             showGraph(true);
         }
     }
     const showGraph=function(bShow){
       if (chart!==undefined) {chart.destroy();chart=undefined;wrapper.querySelector(".graphplaceholder").innerHTML=graphCanvasHTML; }
-      if(wrapper.querySelector(":scope .graphplaceholder").style.display=='block' && !bShow) {wrapper.querySelector(":scope .graphplaceholder").style.display='none';return;}
+      if(wrapper.querySelector(":scope .graphplaceholder").style.display==='block' && !bShow) {wrapper.querySelector(":scope .graphplaceholder").style.display='none';return;}
       if(!bShow) return;
       var ctx=wrapper.querySelector(":scope .graphplaceholder canvas");
       wrapper.querySelector(":scope .graphplaceholder").style.display='block';
@@ -1049,15 +1054,22 @@ document.head.appendChild(style);
         type: config.graphType,
         data: {
             labels: dd.labels,
-            datasets: Array.isArray(dd.values[0])?dd.values.map((x,idx)=>({label:dd.title[idx],data:x,borderWidth:1,fill:false,
-              backgroundColor: config.graphType=='pie'?x.map((v,i)=>colors[ci++ % colors.length]):colors[ci],
-              borderColor: config.graphType=='pie'?x.map((v,i)=>colors[ci++ % colors.length]):colors[ci++],
-            })):[{
+        datasets: Array.isArray(dd.values[0])?
+            dd.values.map((x,idx)=>(
+                {label:dd.title[idx],
+                data:x,
+                borderWidth:1,fill:false,
+                  backgroundColor: config.graphType==='pie'?x.map((v,i)=>colors[i % colors.length]):colors[ci],
+                  borderColor: config.graphType==='pie'?x.map((v,i)=>colors[i % colors.length]):colors[ci++],
+                }
+            ))
+            :
+            [{
               label: dd.title,
               data: dd.values,
               borderWidth: 1,
-              backgroundColor: config.graphType=='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci],
-              borderColor: config.graphType=='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci++],
+              backgroundColor: config.graphType==='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci],
+              borderColor: config.graphType==='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci++],
           }]
         },
         options: {
@@ -1112,7 +1124,7 @@ document.head.appendChild(style);
         h.appendChild(div);
         div.addEventListener('click',function(e){stop(e);});
         function getPadding(el){
-          if(window.getComputedStyle(el, null).getPropertyValue('box-sizing')=='border-box') return 0;
+          if(window.getComputedStyle(el, null).getPropertyValue('box-sizing')==='border-box') return 0;
           return parseInt(window.getComputedStyle(el, null).getPropertyValue('padding-left'))+parseInt(window.getComputedStyle(el, null).getPropertyValue('padding-right'));
         }
         div.addEventListener('mousedown',e=>{
@@ -1178,7 +1190,7 @@ document.head.appendChild(style);
         thead.appendChild(tr);
         tr.classList.add('grouping');
         config.columns.forEach((c,idx)=>{
-            var td=document.createElement("TH");td.dataset.i=idx;tr.appendChild(td);if(c.visible===false) td.style.display='none';if(c.printable===false) td.classList.add('noprint');  (c.class||'').split(' ').filter(x=>x!='').forEach(c1=>td.classList.add(c1));
+            var td=document.createElement("TH");td.dataset.i=idx;tr.appendChild(td);if(c.visible===false) td.style.display='none';if(c.printable===false) td.classList.add('noprint');  (c.class||'').split(' ').filter(x=>x!=='').forEach(c1=>td.classList.add(c1));
             td.innerHTML=`<select class="`+(c.filterInputClass||'').split(' ').join(' ')+`">`+([config.lang.groupby,config.lang.avg,config.lang.count,config.lang.first,config.lang.last,config.lang.min,config.lang.max,config.lang.sum]).map((t,i)=>(`<option value="`+i+`">${t}</option>`))+`</select>`;
             td.querySelector(":scope select").addEventListener('change',function(ev){updateGrouping(ev)});
         });
@@ -1226,7 +1238,7 @@ document.head.appendChild(style);
       setPageSize:function(x){config.size=parseInt(x);config.page=1;render();},
       getPageSize:function(){return config.size;},
       getSort:getSort,
-      setSort:function(ss){if(typeof ss=='number') ss=[ss];config.sort=[];ss.map(x=>sort(Math.abs(x),x<0,true));render();},
+      setSort:function(ss){if(typeof ss==='number') ss=[ss];config.sort=[];ss.map(x=>sort(Math.abs(x),x<0,true));render();},
       filter:function(idx,str){thead.querySelector(":scope tr.filter th:nth-child("+(idx+(config.multiselect?1:0))+")").querySelector(":scope input, select").value=str;render();},
       getFilter:getFilter,
       editCell:editCell,
@@ -1235,7 +1247,7 @@ document.head.appendChild(style);
       setCell:function(rownum,col,v){ss(rownum-1,col-1,v)},
       getCell:function(rownum,col){return data[rownum-1][(config.columns[col-1].name)||(col-1)]},
       getExportData:getExportData,
-      exportData:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt=='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
+      exportData:function(fmt='txt',filename='export'){downloadFile(getExportData(fmt),filename+'.'+fmt,(fmt==='xls'?'application/vnd.ms-excel;base64,':'text/plain'));},
       search:function(q){if(q===undefined) return config.q; config.q=q;render();},
       getSelectedItem:function(){return selected_rows.length?selected_rows[0]:null;},
       getSelectedItems:getSelectedItems,
@@ -1256,16 +1268,30 @@ document.head.appendChild(style);
         return JSON.stringify({
             grouping:getGrouping(),size:config.size,sort:config.sort,
             visible:config.columns.map((x,idx)=>x.visible===undefined?true:x.visible),
-            columnWidths: [...thead.querySelectorAll(":scope tr:nth-child(1) th")].map((e)=>e.clientWidth)
+            columnWidths: [...thead.querySelectorAll(":scope tr:nth-child(1) th")].map((e)=>e.clientWidth),
+            graphValues:[
+                wrapper.querySelector(`:scope #${id}__select_graph_x`).value,
+                wrapper.querySelector(`:scope #${id}__select_graph_y`).value,
+                wrapper.querySelector(`:scope #${id}__select_graph_y2`).value,
+                wrapper.querySelector(`:scope #${id}__select_graph_type`).value
+            ]
         });
       },
       loadConfig:function(objConfig){
-        var o=typeof objConfig == 'string' ? JSON.parse(objConfig):objConfig;
+        var o=typeof objConfig === 'string' ? JSON.parse(objConfig):objConfig;
         config.size=o.size;
         config.sort=o.sort;
         setGrouping(o.grouping);
         config.columns.map((c,idx)=>showColumn(idx,o.visible[idx],false));
         if(undefined!==o.columnWidths) thead.querySelectorAll(":scope tr:nth-child(1) th").forEach((e,i)=>e.style.width=o.columnWidths[i]+'px');
+        if(undefined!==o.graphValues){
+            wrapper.querySelector(`:scope #${id}__select_graph_x`).value=o.graphValues[0];
+            wrapper.querySelector(`:scope #${id}__select_graph_y`).value=o.graphValues[1];
+            wrapper.querySelector(`:scope #${id}__select_graph_y2`).value=o.graphValues[2];
+            wrapper.querySelector(`:scope #${id}__select_graph_type`).value=o.graphValues[3];
+            showGraph2();
+        }
+
         redraw();
       },
       destroy:function(replaceWith){

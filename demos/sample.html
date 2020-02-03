@@ -23,7 +23,7 @@
     <h1>FathGrid demo</h1>
 
     <div style="display: flex;">
-      <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option><option value="0">All</option></select></div>
+      <div style="flex-grow: 1">Records per page: <select id="selSize" onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option><option value="0">All</option></select></div>
       <div style="flex-grow: 1">
         
         <div class="input-group mb-3">
@@ -45,7 +45,7 @@
   <script src="data/demodata.js"></script>
     <script>
 
-var t1=FathGrid("table1",{
+    var t1=FathGrid("table1",{
       size:10,
       editable:true,
       filterable:true,
@@ -88,6 +88,11 @@ var t1=FathGrid("table1",{
       data:demodata,
     });
     
+    window.addEventListener('beforeunload',function(){ localStorage.setItem("t1_config",t1.saveConfig())});
+    var objConfig=localStorage.getItem("t1_config");
+    if(objConfig!==null) t1.loadConfig(objConfig);
+    document.querySelector("#selSize").value=t1.getPageSize();
+
     </script>
   </body>
 </html>
