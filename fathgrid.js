@@ -252,11 +252,11 @@ document.head.appendChild(style);
     }
     var renderPaginator=function(){
       var rr=`&#x23f5;`,ll=`&#x23F4;`;
-      return (config.size>=filteredRecords && config.size>0) ? '':`
+      return (config.size>=filteredRecords || config.size===0) ? '':`
         <ul class="pagination" >
           <li class="page-item"><a class="page-link firstpage" title="${config.lang.first}" href="#">&#x2503;${config.rtl?rr:ll}</a></li>
           <li class="page-item"><a class="page-link prevpage" title="${config.lang.previous}" href="#">${config.rtl?rr:ll}</a></li>
-          <li class="page-item active"><a class="page-link gotopage" title="${config.lang.gotoPage}" href="javascript:void(0)">${config.page} / ${Math.floor((filteredRecords+(config.size-1))/config.size)}</a></li>
+          <li class="page-item active"><a class="page-link gotopage" title="${config.lang.gotoPage}" href="javascript:void(0)">${config.page} / ${config.size===0?1:Math.floor((filteredRecords+(config.size-1))/config.size)}</a></li>
           <li class="page-item"><a class="page-link nextpage" title="${config.lang.next}" href="#">${config.rtl?ll:rr}</a></li>
           <li class="page-item"><a class="page-link lastpage" title="${config.lang.last}" href="#">${config.rtl?ll:rr}&#x2503;</a></li>
         </ul>
@@ -475,7 +475,7 @@ document.head.appendChild(style);
         return ok;
       });
       filteredRecords=fdata.length;
-      return fdata.slice((config.page-1)*config.size,config.page*config.size);
+      return config.size===0?fdata:fdata.slice((config.page-1)*config.size,config.page*config.size);
     }
 
     var _renderData=[],_graphData=[];
@@ -1004,8 +1004,7 @@ document.head.appendChild(style);
         labels: dd.labels,
         datasets: Array.isArray(dd.values[0])?
             dd.values.map((x,idx)=>({label:dd.title[idx],data:x,borderWidth:1,fill:false,
-                          backgroundColor: config.graphType=='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci],
-                          borderColor: config.graphType=='pie'?dd.values.map((v,i)=>colors[i % colors.length]):colors[ci++],
+                          backgroundColor: config.graphType=='pie'?x.map((v,i)=>colors[ci++ % colors.length]):colors[ci],
             }))
             :
             [{
@@ -1050,7 +1049,10 @@ document.head.appendChild(style);
         type: config.graphType,
         data: {
             labels: dd.labels,
-            datasets: Array.isArray(dd.values[0])?dd.values.map((x,idx)=>({label:dd.title[idx],data:x,borderWidth:1,backgroundColor: colors[ci],borderColor: colors[ci++],fill:false})):[{
+            datasets: Array.isArray(dd.values[0])?dd.values.map((x,idx)=>({label:dd.title[idx],data:x,borderWidth:1,fill:false,
+              backgroundColor: config.graphType=='pie'?x.map((v,i)=>colors[ci++ % colors.length]):colors[ci],
+              borderColor: config.graphType=='pie'?x.map((v,i)=>colors[ci++ % colors.length]):colors[ci++],
+            })):[{
               label: dd.title,
               data: dd.values,
               borderWidth: 1,
