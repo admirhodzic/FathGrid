@@ -23,7 +23,7 @@
     <h1>FathGrid demo</h1>
 
     <div style="display: flex;">
-      <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option></select></div>
+      <div style="flex-grow: 1">Records per page: <select onchange="t1.setPageSize(this.value)"><option value="5">5</option><option selected value="10">10</option><option value="20">20</option><option value="50">50</option><option value="0">All</option></select></div>
       <div style="flex-grow: 1">
         
         <div class="input-group mb-3">
@@ -54,10 +54,6 @@ var t1=FathGrid("table1",{
       onChange:function(item,col,old,value){console.log("onChange:",item.id,col,old,value);return value==''?false:true;},
       rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
       
-      //grouping
-      sortBy:[1],//group on first column
-      groupOn:item=>`${item.country}`, //group expression
-      showGroupFooter:true,
       selectColumns:true,
       columns:[
         {name:'country',header:'Country',visible:false}, //invisible grouping column
@@ -90,8 +86,6 @@ var t1=FathGrid("table1",{
         {filterable:false,editable:false,name:'photo',html:function(item){return `<img  src="https://i.pravatar.cc/32?u=${item.id}"/>`},header:'Img'},
       ],
       data:demodata,
-      graphValues:(data)=>({title:'Salary',labels:data.map(x=>x.name),values:data.map(item=>item.salary)}),
-      graphType:'bar',
     });
     
     </script>
