@@ -10,7 +10,7 @@ No dependencies pure JavaScript data table/grid with:
 - custom row highlights,
 - show/hide columns,
 - columns resizing,
-- grouping (with group header/footer),
+- grouping and data aggregation (with group header/footer),
 - in-place data edit mode,
 - inline data, JSON fetching or server-side processing,
 - sub-grid,
