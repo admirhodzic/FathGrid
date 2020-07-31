@@ -53,7 +53,7 @@
       showFooter:true,
       onChange:function(item,col,old,value){console.log("onChange:",item.id,col,old,value);return value==''?false:true;},
       rowClass:function(dr,idx){return dr.id==3?'table-info':(dr.id==9?'table-warning':'')},
-      
+      inputClass:'form-control',
       selectColumns:true,
       columns:[
         {name:'country',header:'Country',visible:false}, //invisible grouping column

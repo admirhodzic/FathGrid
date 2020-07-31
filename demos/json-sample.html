@@ -55,6 +55,7 @@ fetch('https://jsonplaceholder.typicode.com/users')
 
         t1=FathGrid("table1",{
           size:12,
+          inputClass:'form-control',
           editable:true,
           onChange:function(data,col,old,value){console.log("onChange:",data.id,col,old,value);return value==''?false:true;},
           columns:[
