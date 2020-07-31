@@ -17,6 +17,12 @@
     <!-- add chart.js to enable charting -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
     <script src="../fathgrid.js" ></script>
+
+    <!-- fix sort indicator position on right-align columns-->
+    <style>
+      .fathgrid-wrapper .fathgrid th.sorted.text-right::after,
+      .fathgrid-wrapper .fathgrid th.sorted-desc.text-right::after {left:0.4em;right:auto;}
+    </style>
   </head>
   <body>
       <div class="container-fluid">
@@ -69,7 +75,7 @@
         },
         {
           name:'email',header:'Email',
-          filter:null,//array or null for auto-generation of filter list
+          filter:null,//array of filter values or null for auto-generation of filter list
           //editable:function(data,col){return data.id>3}, //is field editable
         },
         {

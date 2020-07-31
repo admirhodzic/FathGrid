@@ -466,8 +466,8 @@ document.head.appendChild(style);
           else if(i.type==='checkbox') {if(i.checked && !isChecked(vv(x,i.dataset.i))) ok=false;}
           else if(i.type==='color') {if(i.value!=='#000000' && !(vv(x,i.dataset.i)===i.value)) ok=false;}
           else if(config.columns[i.dataset.i].type==='checkbox'){ if(i.value!=='' && !(vv(x,i.dataset.i)===i.value)) ok=false;}
-          else if(i.value!=='' && (typeof vv(x,i.dataset.i) ==='number') && vv(x,i.dataset.i)!==(i.value)) ok=false;
-          else if(i.value!=='' && (typeof vv(x,i.dataset.i) ==='string')&& !vv(x,i.dataset.i).includes(i.value)) ok=false;
+          else if(i.value!=='' && (typeof vv(x,i.dataset.i) ==='number') ) ok=(vv(x,i.dataset.i)==((typeof i.value !=='number')?parseFloat(i.value):i.value));
+          else if(i.value!=='' && !(''+vv(x,i.dataset.i)).includes(i.value)) ok=false;
 
           if(ok && config.q!==''){
             ok = (config.columns.find((f,ci)=>(typeof vv(x,ci) === 'number'?vv(x,ci)===config.q:(typeof vv(x,ci)==='string'?(vv(x,ci).toLowerCase().includes(config.q.toLowerCase())):(vv(x,ci)===config.q))))!==undefined);
@@ -710,7 +710,7 @@ document.head.appendChild(style);
                 //i.setAttribute("multiple","multiple");
                 var ff=config.columns[idx].filter;
                 if(null===ff) {ff=[];data.forEach(v=>{if(!ff.includes(vv(v,idx)))ff.push(vv(v,idx))});ff.sort();}
-                if(typeof ff === 'object')
+                if(typeof ff === 'object' && !Array.isArray(ff))
                     Object.keys(ff).forEach(k=>{var v=ff[k],o=document.createElement("OPTION");o.innerText=((typeof v === 'object')?v.name:v);o.value=(typeof v ==='object')?v.value:k;i.add(o);});
                 else
                     ff.forEach(v=>{var o=document.createElement("OPTION");o.innerText=((typeof v === 'object')?v.name:v);o.value=(typeof v ==='object')?v.value:v;i.add(o);});
