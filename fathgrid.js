@@ -375,7 +375,7 @@ document.head.appendChild(style);
     var paginators=wrapper.querySelectorAll(`:scope .paginator${id}`);
     var exporter=wrapper.querySelector(`#exporter${id}`);
     if(exporter!==null) exporter.querySelectorAll(":scope a").forEach(a=>{a.addEventListener("click",function(e){if(undefined!==e.srcElement.dataset.format) downloadFile(getExportData(e.srcElement.dataset.format),"export."+e.srcElement.dataset.format)})});
-    ("fathgrid ").split(" ").forEach(x=>{if(x!=='')table.classList.add(x)});
+    ("fathgrid "+(config.tableClass||'')).split(" ").forEach(x=>{if(x!=='') table.classList.add(x)});
 
     if(data===null || totalRecords===0) table.querySelectorAll(":scope tbody tr").forEach((tr,idx) => {
       var row=[];
@@ -1240,6 +1240,7 @@ document.head.appendChild(style);
 
     return {
       id:id,
+      setConfig:function(newConfig){config={...config,...newConfig};render();},
       render:render,
       nextPage:nextPage,
       prevPage:prevPage,
