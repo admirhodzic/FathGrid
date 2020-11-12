@@ -1,39 +1,126 @@
-<head>
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
+    <title>FathGrid demo!</title>
+    
+    <!-- add jsPdf to enable PDF export -->
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+
+    <!-- add chart.js to enable charting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+    <script src="../../fathgrid.js" ></script>
+
+    <!-- fix sort indicator position on right-align columns-->
+    <style>
+      .fathgrid-wrapper .fathgrid th.sorted.text-right::after,
+      .fathgrid-wrapper .fathgrid th.sorted-desc.text-right::after {left:0.4em;right:auto;}
+    </style>
+    <script src="https://unpkg.com/vue"></script>
+
 </head>
-<script src="https://unpkg.com/vue"></script>
-<script src="../../fathgrid.js"></script>
+  <body>
+    <div class="container -fluid">
+      <h1>FathGrid Vue demo</h1>
+  
 
-<div id="app">
-  <p>{{ message }}</p>
 
-  <grid id="table1" v-bind:dd="data"></grid>
+  <div id="app">
+    <p>{{ message }}</p>
+
+    page size:<select v-model="pagesize"><option value="5">5</option><option value="10">10</option><option value="20">20</option></select>
+    <button v-on:click="increasePage">page+1</button>
+    <grid 
+      id="table1" 
+      server-url="https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}"
+      v-bind:size="pagesize"
+      v-bind:page="page"
+      input-class='form-control'
+      table-class='table table-bordered'
+      v-on:row-class="gridRowClass"
+      v-on:on-click="gridClicked"
+      v-bind:columns="[
+        {name:'id',header:'ID'},
+        {name:'title',header:'Title'},
+        {name:'body',header:'Body',type:'textarea'},
+      ]"/>
+
+    </grid>
+  </div>
+
 </div>
+
 <script>
 
 
+
+//----------------------------- FathGrid Vue wrapper component -------------------------------------------------//
 Vue.component('grid', {
-    props:['id','dd'],
-  template: '<table class="table" :id="id"></table>',
+  props:['id','size',  'page','multiselect','editable','filterable','sortable','pageable','exportable','printable','graphType',
+        'graphValues','showGraph','showGrouping','showFooter','selectColumns','showGroupFooter','showTableTotal','showGroupHeader','showGroupRows',
+        'onInitFilter','onInitTable','onInitInput','prepareData','sort','columns',
+        'rowClass','data','q','rtl','decimals','graphHeight','template','language','restoreColumns','resizable','fetchOptions','filterParamPrefix','pageNumberBase'
+  ],
+  template: '<table class="table " :id="id"></table>',
   created: function () {
     this.$nextTick(function () {
-        var t1=FathGrid(this.id,{data:this.dd,columns:[{header:'a'},{header:'b'},{header:'c'}]});
+        var lis={},attrs={},props={};
+        Object.keys(this.$listeners).map(k=>{lis[k.replace(/-./g, x=>x[1].toUpperCase())]=this.$listeners[k];});
+        Object.keys(this.$attrs).map(k=>{attrs[k.replace(/-./g, x=>x[1].toUpperCase())]=this.$attrs[k];});
+
+
+        Object.keys(this.$props).map(k=>{if(this.$props[k]!==undefined) props[k]=this.$props[k];});
+
+        this.t1=FathGrid(this.id,{
+          serverURL:attrs['serverUrl'],
+          ...props,
+          ...lis,
+          ...attrs
+        });
+        Object.keys(this.$props)
+          .map(k=>{
+            this.$watch(
+              ()=>this.$props[k],
+              ()=>{
+                var props2={};
+                Object.keys(this.$props).map(k=>{if(this.$props[k]!==undefined) props2[k]=this.$props[k];});
+                this.t1.setConfig({...props2})
+              }
+            )
+          });
     })
-    }
+  }
 })
 
 
+
+//----------------------------- Application code -------------------------------------------------//
 new Vue({
   el: '#app',
   data: {
     message: 'Hello Vue.js!',
-    data:[[11,22,33],[44,55,66],[77,88,99]],
+    pagesize:10,
+    page:2
+  },
+  methods:{
+    gridRowClass:function(dr,idx){
+      return dr.id==3?'table-info':(dr.id==9?'table-warning':'')
+    },
+    gridClicked:function(data, col, el){
+      alert('clicked on '+data.id+':'+col);
+    },
+    increasePage:function(){this.page++;}
   }
+
+  
 })
 
 </script>
+</body>
+</html>
