@@ -12,9 +12,9 @@
     
     <!-- add jsPdf to enable PDF export -->
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
-
     <!-- add chart.js to enable charting -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+
     <script src="../../fathgrid.js" ></script>
 
     <!-- fix sort indicator position on right-align columns-->
@@ -35,12 +35,15 @@
     <p>{{ message }}</p>
 
     page size:<select v-model="pagesize"><option value="5">5</option><option value="10">10</option><option value="20">20</option></select>
-    <button v-on:click="increasePage">page+1</button>
+    <button v-on:click="increasePage">page+1</button> <button v-on:click="decreasePage">page-1</button> 
+    <button v-on:click="setData">new data</button> 
     <grid 
       id="table1" 
+      ref="grid"
       server-url="https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}"
       v-bind:size="pagesize"
       v-bind:page="page"
+      v-bind:data="tabledata"
       input-class='form-control'
       table-class='table table-bordered'
       v-on:row-class="gridRowClass"
@@ -77,7 +80,7 @@ Vue.component('grid', {
 
         Object.keys(this.$props).map(k=>{if(this.$props[k]!==undefined) props[k]=this.$props[k];});
 
-        this.t1=FathGrid(this.id,{
+        this.api=FathGrid(this.id,{
           serverURL:attrs['serverUrl'],
           ...props,
           ...lis,
@@ -87,17 +90,21 @@ Vue.component('grid', {
           .map(k=>{
             this.$watch(
               ()=>this.$props[k],
+              k=='data' ?              ()=>{
+                this.api.setConfig({serverURL:undefined});
+                this.api.setData(this.$props.data);
+              } :
               ()=>{
                 var props2={};
                 Object.keys(this.$props).map(k=>{if(this.$props[k]!==undefined) props2[k]=this.$props[k];});
-                this.t1.setConfig({...props2})
+                this.api.setConfig({...props2});
               }
             )
           });
     })
   }
 })
-
+//------------- end component code
 
 
 //----------------------------- Application code -------------------------------------------------//
@@ -106,7 +113,8 @@ new Vue({
   data: {
     message: 'Hello Vue.js!',
     pagesize:10,
-    page:2
+    page:1,
+    tabledata:undefined
   },
   methods:{
     gridRowClass:function(dr,idx){
@@ -114,8 +122,15 @@ new Vue({
     },
     gridClicked:function(data, col, el){
       alert('clicked on '+data.id+':'+col);
+      this.$refs.grid.api.editCell(data.rownum,col);
     },
-    increasePage:function(){this.page++;}
+    increasePage:function(){this.page++;},
+    decreasePage:function(){this.page=Math.max(1,this.page-1)},
+    setData:function(){this.tabledata=[
+      {id:1,title:"Title 1",body:"Some text ..."},
+      {id:2,title:"Title 2",body:"Some text more ..."},
+      {id:3,title:"Title 3",body:"Some text even more..."},
+    ];}
   }
 
   
