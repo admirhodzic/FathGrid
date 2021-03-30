@@ -16,8 +16,8 @@ No dependencies pure JavaScript data table/grid with:
 - sub-grid,
 - interactive data graph.
 
-![Sample screenshot](/fathgrid.png)
-![Sample screenshot](/fathgrid2.gif)
+![Sample screenshot](/img/fathgrid.png)
+![Sample screenshot](/img/fathgrid2.gif)
 
 
 Just include .js file in your HTML and initialize table with:

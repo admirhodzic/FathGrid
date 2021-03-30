@@ -1,5 +1,5 @@
 import './App.css';
-import Grid from './Grid.js';
+import FathGrid from './FathGridComponent.js';
 import { useRef, useState } from 'react';
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
                 <option value={20}>20</option>
           </select>
 
-          <Grid ref={grid}
+          <FathGrid ref={grid}
             serverURL={'https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${size}&_sort=${sort}&_order=${order}&q=${search}&${filters}'}
             
             size={pageSize}
