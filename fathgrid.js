@@ -450,8 +450,9 @@ document.head.appendChild(style);
         return data;
       }
 
-      totalRecords=data.length;
-      fdata=data.filter(x=>{
+      var preparedDate=await config.prepareData(data);
+      totalRecords=preparedDate.length;
+      fdata=preparedDate.filter(x=>{
         var ok=true;
         if(config.multiselect && thead.querySelector(":scope tr.filter .selector").checked && !selected_rows.includes(x)) return false;
 

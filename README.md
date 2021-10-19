@@ -131,7 +131,21 @@ For huge data amounts, use server-side processing (sorting, paginating and filte
 <tr><td>data</td><td>table data</td><td>data from HTML table content</td></tr>
 <tr><td>rowClass</td><td>function to return a string with row classes. Use it to change row appearance based on some criteria.</td><td>function(data,index){}</td></tr>
 <tr><td>onChange</td><td>function to call when cell data is changed</td><td>function(data, col, old_value, new_value){}</td></tr>
-<tr><td>groupOn</td><td>function which returns a HTML string to group records on</td><td>{}</td></tr>
+<tr><td>groupOn</td><td>function which returns a HTML string to group records on<br/>Eg:<br/> 
+
+  //group on first column
+
+  sortBy : [1],
+
+  //grouping expression
+
+  groupOn : item=>\`${item[0]}\`,
+
+  //show aggregate footer
+
+  showGroupFooter : true,
+
+</td><td>{}</td></tr>
 <tr><td>sortBy</td><td>Array or column indices to sort always. Usable for grouping records.</td><td>{}</td></tr>
 <tr><td>columns</td><td>configure columns</td><td>{}</td></tr>
 <tr><td>serverURL</td><td>templated string URL for data retrieval</td><td>undefined</td></tr>
