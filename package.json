@@ -1,0 +1,33 @@
+{
+  "name": "FathGrid",
+  "version": "1.0.0",
+  "description": "No dependencies pure JavaScript data table/grid with:\r - instant search, \r - paging, \r - sorting (by multiple columns), \r - filtering (with text input or selecting from a list),\r - printing,\r - export to txt, csv, pdf, xls, etc.,\r - multiple rows selection,\r - custom row highlights,\r - show/hide columns,\r - columns resizing,\r - grouping and data aggregation (with group header/footer),\r - in-place data edit mode,\r - inline data, JSON fetching or server-side processing,\r - sub-grid,\r - interactive data graph.",
+  "main": "dist/FathGrid.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "lint": "eslint ./src/ "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/admirhodzic/FathGrid.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/admirhodzic/FathGrid/issues"
+  },
+  "homepage": "https://github.com/admirhodzic/FathGrid#readme",
+  "devDependencies": {
+    "css-loader": "^5.2.0",
+    "eslint": "^7.23.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.28.0",
+    "webpack-cli": "^4.6.0"
+  }
+}

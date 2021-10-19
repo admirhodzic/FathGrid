@@ -14,8 +14,7 @@
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 
 
-    <script src="../fathgrid.js" ></script>
-    <script src="../fathform.js"></script>
+    <script src="../dist/FathGrid.js" ></script>
 
     <style>
       tr.selected td:nth-child(1) {border-left:solid 4px cornflowerblue;}
@@ -88,7 +87,7 @@
               
               //this onclick function shows comments for selected post
               onClick:function(item,col,el){
-                f1=FathForm(item,'form-container',{
+                f1=FathGrid.Form(item,'form-container',{
                   fields:[
                     {name:'id', label:'ID',disabled:true},
                     {name:'userId', label:'User',list:users},
