@@ -91,6 +91,7 @@
         {filterable:false,editable:false,name:'photo',html:function(item){return `<img  src="https://i.pravatar.cc/32?u=${item.id}"/>`},header:'Img'},
       ],
       data:demodata,
+      showGraph: false,
     });
     
     window.addEventListener('beforeunload',function(){ localStorage.setItem("t1_config",t1.saveConfig())});

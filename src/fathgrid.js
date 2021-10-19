@@ -381,8 +381,9 @@ export default function FathGrid (id, _config) {
       return data
     }
 
-    totalRecords = data.length
-    fdata = data.filter(x => {
+    var preparedDate=await config.prepareData(data);
+    totalRecords=preparedDate.length;
+    fdata=preparedDate.filter(x=>{    
       let ok = true
       if (config.multiselect && thead.querySelector(':scope tr.filter .selector').checked && !selectedRows.includes(x)) return false
 
