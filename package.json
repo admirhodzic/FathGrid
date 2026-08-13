@@ -21,9 +21,9 @@
   "homepage": "https://github.com/admirhodzic/FathGrid#readme",
   "devDependencies": {
     "css-loader": "^5.2.0",
-    "eslint": "^7.23.0",
-    "eslint-config-standard": "^16.0.2",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint": "^10.8.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "style-loader": "^2.0.0",
