@@ -436,6 +436,16 @@ export default function FathGrid (id, _config) {
 
   let _renderData = []; let _graphData = []
 
+  function sanitizeHtml (html) {
+    const doc = document.createElement('div')
+    doc.innerHTML = html
+    doc.querySelectorAll('script,style').forEach(el => el.remove())
+    doc.querySelectorAll('*').forEach(el => {
+      ;[...el.attributes].forEach(attr => { if (/^on/i.test(attr.name) || (/^(href|src)$/i.test(attr.name) && /^\s*javascript:/i.test(attr.value))) el.removeAttribute(attr.name) })
+    })
+    return doc.innerHTML
+  }
+
   function renderBody (dd = null, bUpdateGraph = true) {
     if (dd === null) { dd = _renderData } else { _renderData = dd }
     [...tbody.children].forEach(x => tbody.removeChild(x)); editinput = undefined // just in case
@@ -489,7 +499,7 @@ export default function FathGrid (id, _config) {
           c.querySelector(':scope input[type=checkbox]').addEventListener('click', function (e) {
             config.onChange(dr, col, !e.srcElement.checked, e.srcElement.checked)
           })
-        } else if (column.html !== undefined) { c.innerHTML = column.html(dr) } else { c.innerText = x }
+        } else if (column.html !== undefined) { c.innerHTML = sanitizeHtml(column.html(dr)) } else { c.innerText = x }
         if (column.printable === false) { c.classList.add('noprint') }
         r.appendChild(c)
       })
