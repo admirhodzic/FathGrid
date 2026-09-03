@@ -826,9 +826,11 @@ export default function FathGrid (id, _config) {
   }
   const getExportData = function (fmt) {
     let ret = ''
-    if (fmt === 'txt') data.forEach(r => { ret += '\n'; Object.keys(r).forEach(k => { ret += r[k] + '\t' }) })
-    if (fmt === 'csv') { ret += 'sep=,\n'; data.forEach(r => { Object.keys(r).forEach(k => { ret += '"' + ('' + r[k]).replace('"', '\\"') + '",' }); ret += '\n' }) }
-    if (fmt === 'html' || fmt === 'xls') { ret += '<table><tbody>' + data.map(r => { return '<tr>' + Object.keys(r).map(k => { return '<td>' + (r[k] || '') + '</td>' }).join('') + '</tr>' }).join('') + '</tbody></table>' }
+    const headers = config.columns.map((c, i) => c.header || c.name || i)
+    const rows = data.map(r => config.columns.map((c, i) => vv2(r, i)))
+    if (fmt === 'txt') { headers.forEach(h => { ret += h + '\t' }); rows.forEach(r => { ret += '\n'; r.forEach(v => { ret += v + '\t' }) }) }
+    if (fmt === 'csv') { ret += 'sep=,\n'; headers.forEach(h => { ret += '"' + ('' + h).replace('"', '\\"') + '",' }); ret += '\n'; rows.forEach(r => { r.forEach(v => { ret += '"' + ('' + v).replace('"', '\\"') + '",' }); ret += '\n' }) }
+    if (fmt === 'html' || fmt === 'xls') { ret += '<table><thead><tr>' + headers.map(h => { return '<th>' + h + '</th>' }).join('') + '</tr></thead><tbody>' + rows.map(r => { return '<tr>' + r.map(v => { return '<td>' + (v || '') + '</td>' }).join('') + '</tr>' }).join('') + '</tbody></table>' }
     if (fmt === 'xls') {
       const TEMPLATE_XLS = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
