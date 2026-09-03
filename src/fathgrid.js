@@ -395,7 +395,7 @@ export default function FathGrid (id, _config) {
           if (!ok2) ok = false
         // eslint-disable-next-line eqeqeq
         } else if (i.type === 'checkbox') { if (i.checked && !isChecked(vv(x, i.dataset.i))) ok = false } else if (i.type === 'color') { if (i.value !== '#000000' && !(vv(x, i.dataset.i) === i.value)) ok = false } else if (config.columns[i.dataset.i].type === 'checkbox') { if (i.value !== '' && !(vv(x, i.dataset.i) === i.value)) ok = false } else if (i.value !== '' && (typeof vv(x, i.dataset.i) === 'number')) ok = (vv(x, i.dataset.i) == ((typeof i.value !== 'number') ? parseFloat(i.value) : i.value))
-        else if (i.value !== '' && !('' + vv(x, i.dataset.i)).includes(i.value)) ok = false
+        else if (i.value !== '' && !('' + vv(x, i.dataset.i)).toLowerCase().includes(i.value.toLowerCase())) ok = false
 
         if (ok && config.q !== '') {
           ok = (config.columns.find((f, ci) => (typeof vv(x, ci) === 'number' ? vv(x, ci) === config.q : (typeof vv(x, ci) === 'string' ? (vv(x, ci).toLowerCase().includes(config.q.toLowerCase())) : (vv(x, ci) === config.q)))) !== undefined)
