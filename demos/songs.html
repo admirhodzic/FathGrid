@@ -53,8 +53,8 @@
   <script src="data/songs.js"></script>
     <script>
 //create HTML table contents
-songs.forEach(x=>document.querySelector("#table1 tbody").innerHTML+=`<tr><td>${x.genre}</td><td>${x.id}</td><td>${x.album}</td><td>${x.artist}</td><td>${x.year}</td></tr>`);
 
+document.querySelector("#table1 tbody").innerHTML=songs.map(x=>`<tr><td>${x.genre}</td><td>${x.id}</td><td>${x.album}</td><td>${x.artist}</td><td>${x.year}</td></tr>`).join("")
 var t1=null;
 function makeGrid(){
 
